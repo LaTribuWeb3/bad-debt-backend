@@ -3,27 +3,30 @@
     "version": "1.0.0",
     "main": "index.ts",
     "scripts": {
-      "start": "ts-node ./src/index.ts",
-      "build": "rimraf ./build && tsc",
-      "lint": "eslint . --ext .ts",
-      "lintfix": "eslint . --ext .ts --fix",
-      "prettier-format": "prettier --config .prettierrc \"./src/**/*.ts\" --write",
-      "prettier-watch": "onchange \"src/**/*.ts\" -- prettier --write {{changed}}"
+        "start": "ts-node ./src/index.ts",
+        "build": "rimraf ./build && tsc",
+        "lint": "eslint . --ext .ts",
+        "lintfix": "eslint . --ext .ts --fix",
+        "prettier-format": "prettier --config .prettierrc \"./src/**/*.ts\" --write",
+        "prettier-watch": "onchange \"src/**/*.ts\" -- prettier --write {{changed}}"
     },
     "keywords": [],
     "author": "",
     "license": "ISC",
     "devDependencies": {
-      "@types/node": "^18.15.11",
-      "@typescript-eslint/eslint-plugin": "^5.57.1",
-      "@typescript-eslint/parser": "^5.57.1",
-      "eslint": "^8.37.0",
-      "eslint-config-prettier": "^8.8.0",
-      "eslint-plugin-prettier": "^4.2.1",
-      "onchange": "^7.1.0",
-      "prettier": "^2.8.7",
-      "rimraf": "^4.4.1",
-      "ts-node": "^10.9.1",
-      "typescript": "^5.0.3"
+        "@types/node": "^18.15.11",
+        "@typescript-eslint/eslint-plugin": "^5.57.1",
+        "@typescript-eslint/parser": "^5.57.1",
+        "eslint": "^8.37.0",
+        "eslint-config-prettier": "^8.8.0",
+        "eslint-plugin-prettier": "^4.2.1",
+        "onchange": "^7.1.0",
+        "prettier": "^2.8.7",
+        "rimraf": "^4.4.1",
+        "ts-node": "^10.9.1",
+        "typescript": "^5.0.3"
+    },
+    "dependencies": {
+        "ethers": "^6.6.2"
     }
-  }
+}
