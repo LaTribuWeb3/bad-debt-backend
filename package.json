@@ -9,12 +9,14 @@
         "lintfix": "eslint . --ext .ts --fix",
         "prettier-format": "prettier --config .prettierrc \"./src/**/*.ts\" \"./tests/**/*.ts\" --write",
         "prettier-watch": "onchange \"src/**/*.ts\" \"./tests/**/*.ts\" -- prettier --write {{changed}}",
-        "test": "jest"
+        "test": "jest",
+        "typechain": "typechain --target ethers-v6 --out-dir src/contracts/types 'src/contracts/abis/*.abi'"
     },
     "keywords": [],
     "author": "",
     "license": "ISC",
     "devDependencies": {
+        "@typechain/ethers-v6": "^0.4.0",
         "@types/jest": "^29.5.2",
         "@types/node": "^18.15.11",
         "@typescript-eslint/eslint-plugin": "^5.57.1",
@@ -28,10 +30,12 @@
         "rimraf": "^4.4.1",
         "ts-jest": "^29.1.1",
         "ts-node": "^10.9.1",
+        "typechain": "^8.2.0",
         "typescript": "^5.0.3"
     },
     "dependencies": {
         "bignumber.js": "^9.1.1",
+        "dotenv": "^16.3.1",
         "ethers": "^6.6.2"
     }
 }

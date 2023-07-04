@@ -114,4 +114,7 @@ nocommit/*
 build/*
 
 # coverage files
-coverage/
+coverage/*
+
+# typechain contracts
+src/contracts/types

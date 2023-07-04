@@ -1,11 +1,38 @@
+import { Comptroller, Comptroller__factory } from '../../contracts/types';
 import { ProtocolParser } from '../ProtocolParser';
 import { CompoundConfig } from './CompoundConfig';
 
-export abstract class CompoundParser extends ProtocolParser {
+export class CompoundParser extends ProtocolParser {
   config: CompoundConfig;
+  markets: string[];
+  comptroller: Comptroller;
 
   constructor(config: CompoundConfig, rpcURL: string, heavyUpdateInterval = 24, fetchDelayInHours = 1) {
     super(rpcURL, heavyUpdateInterval, fetchDelayInHours);
     this.config = config;
+    this.markets = [];
+    this.comptroller = Comptroller__factory.connect(config.comptrollerAddress, this.web3Provider);
+  }
+
+  async initPrices(): Promise<{ [tokenAddress: string]: number }> {
+    console.log(`${this.runnerName}: get markets`);
+    this.markets = await this.comptroller.getAllMarkets();
+    console.log(`${this.runnerName}: found markets:`, this.markets);
+
+    const prices: { [tokenAddress: string]: number } = {};
+    for (const market of this.markets) {
+      prices[market] = 1;
+    }
+
+    console.log(`${this.runnerName}: prices:`, prices);
+
+    return prices;
+  }
+
+  heavyUpdate(blockNumber: number): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
+  lightUpdate(blockNumber: number): Promise<void> {
+    throw new Error('Method not implemented.');
   }
 }
