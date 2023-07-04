@@ -4,7 +4,7 @@ export interface UserData {
 }
 
 /**
- * Map a token address to the amount of token
+ * Map a token address to the amount of token, normalized
  */
 export interface TokenData {
   [tokenAddress: string]: number;

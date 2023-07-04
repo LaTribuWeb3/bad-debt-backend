@@ -1,5 +1,6 @@
+import BigNumber from 'bignumber.js';
 import { ethers } from 'ethers';
-import { retry } from '../utils/utils';
+import { CONSTANT_1e18, retry, sleep } from '../utils/utils';
 import { ParserResult, UserData } from '../utils/types';
 
 export abstract class ProtocolParser {
@@ -49,13 +50,14 @@ export abstract class ProtocolParser {
         console.log(`${this.runnerName}: lightUpdate success`);
       }
       console.log(`${this.runnerName}: calc bad debt`);
-      const parserResult = this.calcBadDebt(currTime);
+      const parserResult = await this.calcBadDebt(currTime);
 
       console.log(`${this.runnerName}: ${JSON.stringify(parserResult)}`);
       this.lastUpdateBlock = currBlockNumber;
 
       // don't  increase cntr, this way if heavy update is needed, it will be done again next time
-      console.log('sleeping', mainCntr++);
+      console.log(`${this.runnerName}: sleeping ${this.fetchDelayInHours} hour(s). Fetch counter: ${mainCntr++}`);
+      await sleep(1000 * 3600 * this.fetchDelayInHours);
     }
   }
 
@@ -64,44 +66,79 @@ export abstract class ProtocolParser {
   abstract heavyUpdate(blockNumber: number): Promise<void>;
   abstract lightUpdate(blockNumber: number): Promise<void>;
 
-  calcBadDebt(currTime: number): ParserResult {
-    let tvl18Decimals = '0';
-    let totalBorrow18Decimals = '0';
-    let totalCollateral18Decimals = '0';
-    let sumOfBadDebt18Decimals = '0';
+  /**
+   * Return additional collateral balance (in $) for a user
+   * used for Iron Bank specific incidents for example
+   * @param userAddress the user address
+   * @returns user additional collateral value in $
+   */
+  async additionalCollateralBalance(userAddress: string): Promise<number> {
+    console.log(`additionalCollateralBalance[${userAddress}]: 0`);
+    return 0;
+  }
+
+  async calcBadDebt(currTime: number): Promise<ParserResult> {
+    let tvl = 0;
+    let totalBorrow = 0;
+    let totalCollateral = 0;
+    let sumOfBadDebt = 0;
     const usersWithBadDebt: { user: string; badDebt: string }[] = [];
 
-    // for (const [user, data] of Object.entries(this.users)) {
-    //   const userData = new User(user, data.marketsIn, data.borrowBalance, data.collateralBalace, data.error);
-    //   //console.log({user})
-    //   const additionalCollateral = await this.additionalCollateralBalance(user);
-    //   const userValue = userData.getUserNetValue(this.web3, this.prices);
+    for (const [user, data] of Object.entries(this.users)) {
+      // sum user debts in $
+      let userDebt = 0;
+      for (const [debtTokenAddress, debtAmount] of Object.entries(data.debts)) {
+        // get price for token
+        const tokenPrice = this.prices[debtTokenAddress];
+        if (!tokenPrice) {
+          throw new Error(`Could not find token price for ${tokenPrice}`);
+        }
 
-    //   //console.log("XXX", user, userValue.collateral.toString(), additionalCollateral.toString())
-    //   deposits = deposits.add(userValue.collateral).add(additionalCollateral);
-    //   borrows = borrows.add(userValue.debt);
+        userDebt += tokenPrice * debtAmount;
+      }
 
-    //   const netValue = this.web3.utils.toBN(userValue.netValue).add(additionalCollateral);
-    //   tvl = tvl.add(netValue).add(additionalCollateral);
+      // sum user collateral in $
+      let userCollateral = 0;
+      for (const [collateralTokenAddress, collateralAmount] of Object.entries(data.collaterals)) {
+        // get price for token
+        const tokenPrice = this.prices[collateralTokenAddress];
+        if (!tokenPrice) {
+          throw new Error(`Could not find token price for ${tokenPrice}`);
+        }
 
-    //   if (this.web3.utils.toBN(netValue).lt(this.web3.utils.toBN('0'))) {
-    //     //const result = await this.comptroller.methods.getAccountLiquidity(user).call()
-    //     console.log('bad debt for user', user, Number(netValue.toString()) / 1e6 /*, {result}*/);
-    //     this.sumOfBadDebt = this.sumOfBadDebt.add(this.web3.utils.toBN(netValue));
+        userCollateral += tokenPrice * collateralAmount;
+      }
 
-    //     console.log('total bad debt', Number(this.sumOfBadDebt.toString()) / 1e6);
+      // add optional aditional user collateral in $
+      const additionalCollateral = await this.additionalCollateralBalance(user);
+      if (additionalCollateral > 0) {
+        console.log(`${this.runnerName}: adding additional collateral for user ${user}: ${additionalCollateral}`);
+        userCollateral += additionalCollateral;
+      }
 
-    //     userWithBadDebt.push({ user: user, badDebt: netValue.toString() });
-    //   }
-    // }
+      const userNetValue = userCollateral - userDebt;
+      totalBorrow += userDebt;
+      totalCollateral += userCollateral;
+      tvl += userNetValue;
+
+      if (userNetValue < 0) {
+        //const result = await this.comptroller.methods.getAccountLiquidity(user).call()
+        console.log(`${this.runnerName}: bad debt for user ${user}: ${userNetValue}`);
+        sumOfBadDebt += userNetValue;
+
+        console.log(`${this.runnerName}: total bad debt: ${sumOfBadDebt}`);
+
+        usersWithBadDebt.push({ user: user, badDebt: new BigNumber(userNetValue).times(CONSTANT_1e18).toFixed() });
+      }
+    }
 
     return {
-      borrows: totalBorrow18Decimals,
+      borrows: new BigNumber(totalBorrow).times(CONSTANT_1e18).toFixed(),
       decimals: 18,
-      deposits: totalCollateral18Decimals,
-      tvl: tvl18Decimals,
+      deposits: new BigNumber(totalCollateral).times(CONSTANT_1e18).toFixed(),
+      tvl: new BigNumber(tvl).times(CONSTANT_1e18).toFixed(),
       users: usersWithBadDebt,
-      total: sumOfBadDebt18Decimals,
+      total: new BigNumber(sumOfBadDebt).times(CONSTANT_1e18).toFixed(),
       updated: currTime
     };
   }

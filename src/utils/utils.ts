@@ -1,3 +1,5 @@
+import BigNumber from 'bignumber.js';
+
 /**
  * Retries a function n number of times before giving up
  */
@@ -27,4 +29,12 @@ export async function retry<T extends (...arg0: any[]) => any>(
 
 export async function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+export const CONSTANT_1e18 = new BigNumber(10).pow(18);
+
+export function normalize(amount: string | bigint, decimals: number): number {
+  const bn = new BigNumber(amount.toString());
+  const factor = new BigNumber(10).pow(decimals);
+  return bn.div(factor).toNumber();
 }
