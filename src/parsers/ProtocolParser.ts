@@ -27,15 +27,13 @@ export abstract class ProtocolParser {
     this.prices = {};
   }
 
-  async main() {
+  async main(onlyOnce = false): Promise<ParserResult> {
     let mainCntr = 0;
     // eslint-disable-next-line no-constant-condition
     while (true) {
       this.prices = await this.initPrices();
 
-      const currBlockNumber = (await retry(() => this.web3Provider.getBlockNumber(), [])) - 10;
-      const currTime = (await retry(() => this.web3Provider.getBlock(currBlockNumber), []))?.timestamp;
-
+      const { currBlockNumber, currTime } = await this.getBlockNumAndTime();
       if (!currTime) {
         throw new Error('Could not get currTime');
       }
@@ -55,10 +53,21 @@ export abstract class ProtocolParser {
       console.log(`${this.runnerName}: ${JSON.stringify(parserResult)}`);
       this.lastUpdateBlock = currBlockNumber;
 
-      // don't  increase cntr, this way if heavy update is needed, it will be done again next time
+      // if onlyOnce is set, just return the result.
+      // it is used for debugging or unit testing purpose
+      if (onlyOnce) {
+        return parserResult;
+      }
       console.log(`${this.runnerName}: sleeping ${this.fetchDelayInHours} hour(s). Fetch counter: ${mainCntr++}`);
       await sleep(1000 * 3600 * this.fetchDelayInHours);
     }
+  }
+
+  async getBlockNumAndTime() {
+    const currBlockNumber = (await retry(() => this.web3Provider.getBlockNumber(), [])) - 10;
+    const currTime = (await retry(() => this.web3Provider.getBlock(currBlockNumber), []))?.timestamp;
+
+    return { currBlockNumber, currTime };
   }
 
   abstract initPrices(): Promise<{ [tokenAddress: string]: number }>;
@@ -91,7 +100,7 @@ export abstract class ProtocolParser {
         // get price for token
         const tokenPrice = this.prices[debtTokenAddress];
         if (!tokenPrice) {
-          throw new Error(`Could not find token price for ${tokenPrice}`);
+          throw new Error(`Could not find token price for ${debtTokenAddress}`);
         }
 
         userDebt += tokenPrice * debtAmount;
@@ -103,7 +112,7 @@ export abstract class ProtocolParser {
         // get price for token
         const tokenPrice = this.prices[collateralTokenAddress];
         if (!tokenPrice) {
-          throw new Error(`Could not find token price for ${tokenPrice}`);
+          throw new Error(`Could not find token price for ${collateralTokenAddress}`);
         }
 
         userCollateral += tokenPrice * collateralAmount;

@@ -112,3 +112,6 @@ nocommit/*
 
 # build dir
 build/*
+
+# coverage files
+coverage/
