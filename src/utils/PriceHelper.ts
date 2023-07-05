@@ -1,5 +1,5 @@
 import axios, { AxiosResponse } from 'axios';
-import { normalize, retry } from './Utils';
+import { normalize, retry, sleep } from './Utils';
 import { JsonRpcProvider } from 'ethers';
 import {
   CToken__factory,
@@ -11,6 +11,184 @@ import {
   XJoe__factory
 } from '../contracts/types';
 import { GetTokenInfos } from './TokenHelper';
+import * as dotenv from 'dotenv';
+dotenv.config();
+
+const web3ApiUrl = process.env.WEB3_API_URL;
+if (!web3ApiUrl) {
+  throw new Error('Cannot find WEB3_API_URL in env variables');
+}
+
+const zapperKey = process.env.ZAPPER_KEY;
+if (!zapperKey) {
+  throw new Error('Cannot find ZAPPER_KEY in env variables');
+}
+
+export async function getCTokenPriceFromZapper(
+  ctoken: string,
+  underlying: string,
+  web3Provider: JsonRpcProvider,
+  network: string
+) {
+  if (network.toUpperCase() != 'ETH') {
+    throw new Error('getCTokenPriceFromZapper: only ETH is supported');
+  }
+
+  const totalBalanceInUSD = await fetchZapperTotal(ctoken);
+  //console.log({totalBalanceInUSD})
+  const underlyingContract = ERC20__factory.connect(underlying, web3Provider);
+
+  const decimals = Number(await underlyingContract.decimals());
+  const balance = await underlyingContract.balanceOf(ctoken);
+  const normalizedBalance = normalize(balance, decimals);
+
+  if (balance == 0n) {
+    return 0;
+  }
+
+  const normalizedUSDValue = totalBalanceInUSD / normalizedBalance;
+
+  return normalizedUSDValue;
+}
+
+const base64ZapperKey = Buffer.from(zapperKey).toString('base64');
+async function fetchZapperTotal(address: string): Promise<number> {
+  try {
+    const headers = {
+      'Cache-Control': 'no-cache',
+      Authorization: `Basic ${base64ZapperKey}`,
+      accept: 'application/json',
+      'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0'
+    };
+    // post to zapper to force refresh data
+    const postOptions = {
+      method: 'post',
+      url: 'https://api.zapper.fi/v2/balances/apps',
+      params: {
+        'addresses[]': address,
+        'network[]': 'ethereum'
+      },
+      headers: headers
+    };
+    const postResponse = await axios(postOptions);
+    const jobId = postResponse.data.jobId;
+
+    // wait for job to complete by checking status every 5 seconds
+    let jobComplete = false;
+    while (!jobComplete) {
+      const getStatusOptions = {
+        method: 'get',
+        url: 'https://api.zapper.fi/v2/balances/job-status',
+        params: {
+          jobId: jobId
+        },
+        headers: headers
+      };
+
+      const getStatusResponse = await axios(getStatusOptions);
+      if (getStatusResponse.data.status == 'completed') {
+        console.log(`Job ${jobId} status is ${getStatusResponse.data.status}`);
+        jobComplete = true;
+      } else if (getStatusResponse.data.status == 'unknown') {
+        console.log('Zapper status is "unknown", restarting the process');
+        return await fetchZapperTotal(address);
+      } else {
+        console.log(`Job ${jobId} status is ${getStatusResponse.data.status}, waiting 5 seconds`);
+        await sleep(5000);
+      }
+    }
+
+    // get the value
+    const getOptions = {
+      method: 'get',
+      url: 'https://api.zapper.fi/v2/balances/apps',
+      params: {
+        'addresses[]': address,
+        'network[]': 'ethereum'
+      },
+      headers: headers
+    };
+
+    const res = await axios(getOptions);
+
+    // sum balance usd of all data where network is ethereum
+    let sumBalanceUsd = 0;
+    for (const result of res.data) {
+      if (result.network == 'ethereum') {
+        sumBalanceUsd += result.balanceUSD;
+      }
+    }
+    return sumBalanceUsd;
+  } catch (e) {
+    console.error(`fetchZapperTotal for ${address} failed`);
+    console.error(e);
+    return 0;
+  }
+}
+
+export async function GetEthPrice(network: string): Promise<number> {
+  try {
+    const price = await chainTokenFetchers[`${network.toUpperCase()}` as keyof typeof chainTokenFetchers]();
+    return price;
+  } catch (e) {
+    console.error(e);
+    return 0;
+  }
+}
+
+const chainTokenFetchers = {
+  MOONBEAM: async () => {
+    return 0;
+  },
+  OPTIMISM: async () => {
+    const axiosResp = await axios.get('https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=USD');
+    return axiosResp.data.ethereum.usd || 0;
+  },
+  GNOSIS: async () => {
+    const axiosResp = await axios.get('https://api.coingecko.com/api/v3/simple/price?ids=dai&vs_currencies=USD');
+    return axiosResp.data.dai.usd || 0;
+  },
+  ARBITRUM: async () => {
+    const axiosResp = await axios.get('https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=USD');
+    return axiosResp.data.ethereum.usd || 0;
+  },
+  NEAR: async () => {
+    const axiosResp = await axios.get('https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=USD');
+    return axiosResp.data.ethereum.usd || 0;
+  },
+  ETH: async () => {
+    const axiosResp = await axios.get('https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=USD');
+    return axiosResp.data.ethereum.usd || 0;
+  },
+  AVAX: async () => {
+    const axiosResp = await axios.get(
+      'https://api.coingecko.com/api/v3/simple/price?ids=avalanche-2&vs_currencies=USD'
+    );
+    return axiosResp.data['avalanche-2'].usd || 0;
+  },
+  MATIC: async () => {
+    const axiosResp = await axios.get(
+      'https://api.coingecko.com/api/v3/simple/price?ids=matic-network&vs_currencies=USD'
+    );
+    return axiosResp.data['matic-network'].usd || 0;
+  },
+  BSC: async () => {
+    const axiosResp = await axios.get(
+      'https://api.coingecko.com/api/v3/simple/price?ids=binancecoin&vs_currencies=USD'
+    );
+    return axiosResp.data['binancecoin'].usd || 0;
+  },
+  FTM: async () => {
+    const axiosResp = await axios.get('https://api.coingecko.com/api/v3/simple/price?ids=fantom&vs_currencies=USD');
+    return axiosResp.data['fantom'].usd || 0;
+  },
+  CRO: async () => {
+    const axiosResp = await axios.get(
+      'https://api.coingecko.com/api/v3/simple/price?ids=crypto-com-chain&vs_currencies=USD'
+    );
+    return axiosResp.data['crypto-com-chain'].usd || 0;
+  }
+};
 
 export async function GetPrice(network: string, address: string, web3Provider: JsonRpcProvider): Promise<number> {
   if (network === 'MOONBEAM') return 0;
@@ -21,9 +199,8 @@ export async function GetPrice(network: string, address: string, web3Provider: J
     const apiPrice = await specialPriceFetcher(web3Provider, network, address);
     return apiPrice;
   }
-  const web3ApiUrl = `${process.env.WEB3_PRICE_API}/api/price?network=${network}&tokenAddress=${address}`;
-  console.log({ web3ApiUrl });
-  const axiosResp: any = await retry(axios.get, [web3ApiUrl]);
+  const fullUrl = `${web3ApiUrl}/api/price?network=${network}&tokenAddress=${address}`;
+  const axiosResp = await axios.get(fullUrl);
   //console.log(data)
   return axiosResp.data.priceUSD || 0;
 }

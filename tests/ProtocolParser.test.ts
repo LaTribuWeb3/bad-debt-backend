@@ -34,17 +34,13 @@ class TestParser extends ProtocolParser {
     this.prices = this.injectedPrices;
   }
 
-  override async heavyUpdate(blockNumber: number): Promise<void> {
+  override async fetchUsersData(blockNumber: number): Promise<void> {
     if (!this.injectedUsers) {
       throw new Error('Need injectedUsers for TestParser');
     }
 
     this.users = this.injectedUsers;
     this.userList = Object.keys(this.injectedUsers);
-  }
-
-  override lightUpdate(blockNumber: number): Promise<void> {
-    throw new Error('Method not implemented.');
   }
 }
 

@@ -4,6 +4,8 @@ import { CONSTANT_1e18, retry, sleep } from '../utils/Utils';
 import { ParserResult, UserData } from '../utils/Types';
 import { MonitoringData, MonitoringStatusEnum, RecordMonitoring } from '../utils/MonitoringHelper';
 import { UploadJsonFile } from '../utils/GithubHelper';
+import fs from 'fs';
+import path from 'path';
 
 /**
  * This is the base class that every parser should inherit from
@@ -13,17 +15,22 @@ export abstract class ProtocolParser {
   heavyUpdateInterval: number;
   fetchDelayInHours: number;
   runnerName: string;
-  userListFileName: string;
+  userListFullPath: string;
   userList: string[];
   users: { [key: string]: UserData };
   lastUpdateBlock: number;
   prices: { [tokenAddress: string]: number };
   outputJsonFileName: string;
+  lastHeavyUpdate = 0;
 
   constructor(rpcURL: string, outputJsonFileName: string, heavyUpdateInterval = 24, fetchDelayInHours = 1) {
     this.runnerName = `${this.constructor.name}-Runner`;
     console.log(`runner name: ${this.runnerName}`);
-    this.userListFileName = `${this.runnerName}-userlist.json`;
+    const dataDir = path.join(process.cwd(), 'data');
+    if (!fs.existsSync(dataDir)) {
+      fs.mkdirSync(dataDir, { recursive: true });
+    }
+    this.userListFullPath = path.join(dataDir, `${this.runnerName}-userlist.json`);
     this.web3Provider = new ethers.JsonRpcProvider(rpcURL);
     this.heavyUpdateInterval = heavyUpdateInterval;
     this.fetchDelayInHours = fetchDelayInHours;
@@ -35,7 +42,6 @@ export abstract class ProtocolParser {
   }
 
   async main(onlyOnce = false): Promise<ParserResult> {
-    let mainCntr = 0;
     // eslint-disable-next-line no-constant-condition
     while (true) {
       try {
@@ -44,7 +50,7 @@ export abstract class ProtocolParser {
           await this.SendMonitoringData(MonitoringStatusEnum.RUNNING, Math.round(start / 1000));
         }
 
-        const parserResult = await this.parseProtocol(mainCntr);
+        const parserResult = await this.parseProtocol();
         // if onlyOnce is set, just return the result.
         // it is used for debugging or unit testing purpose
         if (onlyOnce) {
@@ -60,7 +66,7 @@ export abstract class ProtocolParser {
           this.lastUpdateBlock
         );
 
-        console.log(`${this.runnerName}: sleeping ${this.fetchDelayInHours} hour(s). Fetch counter: ${mainCntr++}`);
+        console.log(`${this.runnerName}: sleeping ${this.fetchDelayInHours} hour(s)`);
         await sleep(1000 * 3600 * this.fetchDelayInHours);
       } catch (err) {
         console.error(`${this.runnerName}: An exception occurred: ${err}`);
@@ -84,7 +90,7 @@ export abstract class ProtocolParser {
     }
   }
 
-  async parseProtocol(mainCntr: number) {
+  async parseProtocol() {
     await this.initPrices();
 
     if (!this.prices || Object.keys(this.prices).length == 0) {
@@ -96,15 +102,7 @@ export abstract class ProtocolParser {
       throw new Error('Could not get currTime');
     }
 
-    if (mainCntr % this.heavyUpdateInterval == 0) {
-      console.log(`${this.runnerName}: heavyUpdate start`);
-      await this.heavyUpdate(currBlockNumber);
-      console.log(`${this.runnerName}: heavyUpdate success, current userList contains ${this.userList.length} users`);
-    } else {
-      console.log(`${this.runnerName}: lightUpdate start`);
-      await this.lightUpdate(currBlockNumber);
-      console.log(`${this.runnerName}: lightUpdate success`);
-    }
+    await this.fetchUsersData(currBlockNumber);
 
     if (!this.userList || this.userList.length == 0) {
       throw new Error('this.userList is not initialized');
@@ -178,21 +176,17 @@ export abstract class ProtocolParser {
   }
 
   /**
-   * This function is responsible for filling this.prices
+   * This function MUST initialize this.prices
    */
   abstract initPrices(): Promise<void>;
 
-  /**
-   * This function is responsible for filling this.users and this.userList
-   * @param blockNumber the blocknumber until where to search for events
-   */
-  abstract heavyUpdate(blockNumber: number): Promise<void>;
+  abstract getFallbackPrice(address: string): Promise<number>;
 
   /**
-   * This function is responsible for filling this.users and this.userList
+   * This function MUST initialize this.users and this.userList
    * @param blockNumber the blocknumber until where to search for events
    */
-  abstract lightUpdate(blockNumber: number): Promise<void>;
+  abstract fetchUsersData(blockNumber: number): Promise<void>;
 
   /**
    * Return additional collateral balance (in $) for a user
@@ -205,6 +199,12 @@ export abstract class ProtocolParser {
     return 0;
   }
 
+  /**
+   * Calculate protocol bad debt
+   * Bad debt is simple: for every user that as less collateral (in $) than debt (in $), we add bad debt
+   * @param currTime
+   * @returns
+   */
   async calcBadDebt(currTime: number): Promise<ParserResult> {
     let tvl = 0;
     let totalBorrow = 0;
@@ -270,4 +270,9 @@ export abstract class ProtocolParser {
       updated: currTime
     };
   }
+}
+
+export interface UserListDataStore {
+  lastBlockFetched: number;
+  userList: string[];
 }
