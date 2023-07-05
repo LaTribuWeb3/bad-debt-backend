@@ -44,6 +44,6 @@ export async function GetTokenInfos(network: string, address: string): Promise<T
     tokenInfosCache[network][address] = axiosResp.data;
   }
 
-  console.log(`GetTokenInfos[${network}]: infos for ${address}:`, tokenInfosCache[network][address]);
+  // console.log(`GetTokenInfos[${network}]: infos for ${address}:`, tokenInfosCache[network][address]);
   return tokenInfosCache[network][address];
 }

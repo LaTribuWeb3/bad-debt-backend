@@ -33,8 +33,8 @@ export class CompoundParser extends ProtocolParser {
     const prices: { [tokenAddress: string]: number } = {};
     for (const market of this.markets) {
       const marketInfos = await GetTokenInfos(this.config.network, market);
-      console.log(`${logPrefix} working on ${marketInfos.symbol}`);
       logPrefix = `${this.runnerName} | initPrices | ${marketInfos.symbol} |`;
+      console.log(`${logPrefix} working on ${marketInfos.symbol}`);
       if (market == this.config.cETHAddress) {
         console.log(`${logPrefix} market is cETH, getting eth price`);
         prices[market] = await GetEthPrice(this.config.network);
