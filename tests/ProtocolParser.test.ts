@@ -22,12 +22,14 @@ class TestParser extends ProtocolParser {
   async getBlockNumAndTime() {
     return { currBlockNumber: 10, currTime: 125 };
   }
-  initPrices(): Promise<{ [tokenAddress: string]: number }> {
+  initPrices(): Promise<void> {
     if (!this.injectedPrices) {
       throw new Error('Need injected prices for TestParser');
     }
 
-    return Promise.resolve(this.injectedPrices);
+    this.prices = this.injectedPrices;
+
+    return Promise.resolve();
   }
 
   heavyUpdate(blockNumber: number): Promise<void> {

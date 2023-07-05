@@ -48,7 +48,7 @@ export abstract class ProtocolParser {
           );
         }
 
-        this.prices = await this.initPrices();
+        await this.initPrices();
 
         const { currBlockNumber, currTime } = await this.getBlockNumAndTime();
         if (!currTime) {
@@ -156,9 +156,21 @@ export abstract class ProtocolParser {
     await RecordMonitoring(m);
   }
 
-  abstract initPrices(): Promise<{ [tokenAddress: string]: number }>;
+  /**
+   * This function is responsible for filling this.prices
+   */
+  abstract initPrices(): Promise<void>;
 
+  /**
+   * This function is responsible for filling this.users and this.userList
+   * @param blockNumber the blocknumber until where to search for events
+   */
   abstract heavyUpdate(blockNumber: number): Promise<void>;
+
+  /**
+   * This function is responsible for filling this.users and this.userList
+   * @param blockNumber the blocknumber until where to search for events
+   */
   abstract lightUpdate(blockNumber: number): Promise<void>;
 
   /**
