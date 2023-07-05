@@ -1,7 +1,7 @@
 import BigNumber from 'bignumber.js';
 import { ethers } from 'ethers';
-import { CONSTANT_1e18, retry, sleep } from '../utils/utils';
-import { ParserResult, UserData } from '../utils/types';
+import { CONSTANT_1e18, retry, sleep } from '../utils/Utils';
+import { ParserResult, UserData } from '../utils/Types';
 
 export abstract class ProtocolParser {
   web3Provider: ethers.JsonRpcProvider;

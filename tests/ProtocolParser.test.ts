@@ -1,7 +1,7 @@
 import BigNumber from 'bignumber.js';
 import { ProtocolParser } from '../src/parsers/ProtocolParser';
-import { CONSTANT_1e18 } from '../src/utils/utils';
-import { UserData } from '../src/utils/types';
+import { CONSTANT_1e18 } from '../src/utils/Utils';
+import { UserData } from '../src/utils/Types';
 
 class TestParser extends ProtocolParser {
   injectedPrices: { [tokenAddress: string]: number } | undefined;
