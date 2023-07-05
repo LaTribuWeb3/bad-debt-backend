@@ -123,6 +123,10 @@ export abstract class ProtocolParser {
     return parserResult;
   }
 
+  /**
+   * Send the parsing results, should not be overriden unless for testing
+   * @param parserResult
+   */
   async sendResults(parserResult: ParserResult) {
     await UploadJsonFile(JSON.stringify(parserResult), this.outputJsonFileName);
   }
