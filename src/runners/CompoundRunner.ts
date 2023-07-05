@@ -17,7 +17,7 @@ async function RunCompoundParser() {
   if (!rpcUrl) {
     throw new Error('Could not find env variable "ETH_NODE_URL"');
   }
-  const compoundParser = new CompoundParser(config, rpcUrl, 24, 1);
+  const compoundParser = new CompoundParser(config, rpcUrl, 'ethereum_compound.json', 24, 1);
   await compoundParser.main();
 }
 

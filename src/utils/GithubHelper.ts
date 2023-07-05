@@ -2,7 +2,8 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 import { Octokit } from 'octokit';
 
-const IS_STAGING = process.env.STAGING_ENV && process.env.STAGING_ENV.toLowerCase() == 'true';
+// IS_STAGING is default
+const IS_STAGING = process.env.STAGING_ENV && process.env.STAGING_ENV.toLowerCase() == 'false';
 const REPO_PATH = IS_STAGING ? 'bad-debt-staging' : 'bad-debt';
 
 const octokit = new Octokit({

@@ -3,6 +3,7 @@ import { UnmanagedSubscriber, ethers } from 'ethers';
 import { CONSTANT_1e18, retry, sleep } from '../utils/Utils';
 import { ParserResult, UserData } from '../utils/Types';
 import { MonitoringData, MonitoringStatusEnum, RecordMonitoring } from '../utils/MonitoringHelper';
+import { UploadJsonFile } from '../utils/GithubHelper';
 
 /**
  * This is the base class that every parser should inherit from
@@ -17,8 +18,9 @@ export abstract class ProtocolParser {
   users: { [key: string]: UserData };
   lastUpdateBlock: number;
   prices: { [tokenAddress: string]: number };
+  outputJsonFileName: string;
 
-  constructor(rpcURL: string, heavyUpdateInterval = 24, fetchDelayInHours = 1) {
+  constructor(rpcURL: string, outputJsonFileName: string, heavyUpdateInterval = 24, fetchDelayInHours = 1) {
     this.runnerName = `${this.constructor.name}-Runner`;
     console.log(`runner name: ${this.runnerName}`);
     this.userListFileName = `${this.runnerName}-userlist.json`;
@@ -29,6 +31,7 @@ export abstract class ProtocolParser {
     this.users = {};
     this.lastUpdateBlock = 0;
     this.prices = {};
+    this.outputJsonFileName = outputJsonFileName;
   }
 
   async main(onlyOnce = false): Promise<ParserResult> {
@@ -38,40 +41,10 @@ export abstract class ProtocolParser {
       try {
         const start = Date.now();
         if (!onlyOnce) {
-          await this.SendMonitoringData(
-            MonitoringStatusEnum.RUNNING,
-            Math.round(start / 1000),
-            undefined,
-            undefined,
-            undefined,
-            undefined
-          );
+          await this.SendMonitoringData(MonitoringStatusEnum.RUNNING, Math.round(start / 1000));
         }
 
-        await this.initPrices();
-
-        const { currBlockNumber, currTime } = await this.getBlockNumAndTime();
-        if (!currTime) {
-          throw new Error('Could not get currTime');
-        }
-
-        if (mainCntr % this.heavyUpdateInterval == 0) {
-          console.log(`${this.runnerName}: heavyUpdate start`);
-          await this.heavyUpdate(currBlockNumber);
-          console.log(
-            `${this.runnerName}: heavyUpdate success, current userList contains ${this.userList.length} users`
-          );
-        } else {
-          console.log(`${this.runnerName}: lightUpdate start`);
-          await this.lightUpdate(currBlockNumber);
-          console.log(`${this.runnerName}: lightUpdate success`);
-        }
-        console.log(`${this.runnerName}: calc bad debt`);
-        const parserResult = await this.calcBadDebt(currTime);
-
-        console.log(`${this.runnerName}: ${JSON.stringify(parserResult)}`);
-        this.lastUpdateBlock = currBlockNumber;
-
+        const parserResult = await this.parseProtocol(mainCntr);
         // if onlyOnce is set, just return the result.
         // it is used for debugging or unit testing purpose
         if (onlyOnce) {
@@ -90,6 +63,7 @@ export abstract class ProtocolParser {
         console.log(`${this.runnerName}: sleeping ${this.fetchDelayInHours} hour(s). Fetch counter: ${mainCntr++}`);
         await sleep(1000 * 3600 * this.fetchDelayInHours);
       } catch (err) {
+        console.error(`${this.runnerName}: An exception occurred: ${err}`);
         if (!onlyOnce) {
           await this.SendMonitoringData(
             MonitoringStatusEnum.ERROR,
@@ -108,6 +82,49 @@ export abstract class ProtocolParser {
         }
       }
     }
+  }
+
+  async parseProtocol(mainCntr: number) {
+    await this.initPrices();
+
+    if (!this.prices || Object.keys(this.prices).length == 0) {
+      throw new Error('this.prices is not initialized');
+    }
+
+    const { currBlockNumber, currTime } = await this.getBlockNumAndTime();
+    if (!currTime) {
+      throw new Error('Could not get currTime');
+    }
+
+    if (mainCntr % this.heavyUpdateInterval == 0) {
+      console.log(`${this.runnerName}: heavyUpdate start`);
+      await this.heavyUpdate(currBlockNumber);
+      console.log(`${this.runnerName}: heavyUpdate success, current userList contains ${this.userList.length} users`);
+    } else {
+      console.log(`${this.runnerName}: lightUpdate start`);
+      await this.lightUpdate(currBlockNumber);
+      console.log(`${this.runnerName}: lightUpdate success`);
+    }
+
+    if (!this.userList || this.userList.length == 0) {
+      throw new Error('this.userList is not initialized');
+    }
+    if (!this.users || Object.keys(this.users).length == 0) {
+      throw new Error('this.users is not initialized');
+    }
+
+    console.log(`${this.runnerName}: calc bad debt`);
+    const parserResult = await this.calcBadDebt(currTime);
+
+    console.log(`${this.runnerName}: ${JSON.stringify(parserResult)}`);
+    this.lastUpdateBlock = currBlockNumber;
+
+    await this.sendResults(parserResult);
+    return parserResult;
+  }
+
+  async sendResults(parserResult: ParserResult) {
+    await UploadJsonFile(JSON.stringify(parserResult), this.outputJsonFileName);
   }
 
   async getBlockNumAndTime() {

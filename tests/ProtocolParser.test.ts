@@ -1,7 +1,7 @@
 import BigNumber from 'bignumber.js';
 import { ProtocolParser } from '../src/parsers/ProtocolParser';
 import { CONSTANT_1e18 } from '../src/utils/Utils';
-import { UserData } from '../src/utils/Types';
+import { ParserResult, UserData } from '../src/utils/Types';
 import { MonitoringStatusEnum } from '../src/utils/MonitoringHelper';
 
 class TestParser extends ProtocolParser {
@@ -19,30 +19,31 @@ class TestParser extends ProtocolParser {
     // do nothing
   }
 
-  async getBlockNumAndTime() {
+  override async sendResults(parserResult: ParserResult): Promise<void> {
+    // do nothing
+  }
+
+  override async getBlockNumAndTime() {
     return { currBlockNumber: 10, currTime: 125 };
   }
-  initPrices(): Promise<void> {
+  override async initPrices(): Promise<void> {
     if (!this.injectedPrices) {
       throw new Error('Need injected prices for TestParser');
     }
 
     this.prices = this.injectedPrices;
-
-    return Promise.resolve();
   }
 
-  heavyUpdate(blockNumber: number): Promise<void> {
+  override async heavyUpdate(blockNumber: number): Promise<void> {
     if (!this.injectedUsers) {
       throw new Error('Need injectedUsers for TestParser');
     }
 
     this.users = this.injectedUsers;
     this.userList = Object.keys(this.injectedUsers);
-    return Promise.resolve();
   }
 
-  lightUpdate(blockNumber: number): Promise<void> {
+  override lightUpdate(blockNumber: number): Promise<void> {
     throw new Error('Method not implemented.');
   }
 }
@@ -121,7 +122,7 @@ function getUsersWithBadDebt() {
 
 describe('testing Protocol Parser calc bad debt function', () => {
   test('Test Parser without Bad debt', async () => {
-    const parser = new TestParser('http://fakeRpcUrl', 24, 1);
+    const parser = new TestParser('http://fakeRpcUrl', 'blockchain_test', 24, 1);
 
     parser.injectedPrices = getInjectedPrices();
 
@@ -138,7 +139,7 @@ describe('testing Protocol Parser calc bad debt function', () => {
   });
 
   test('Test Parser with Bad debt', async () => {
-    const parser = new TestParser('http://fakeRpcUrl', 24, 1);
+    const parser = new TestParser('http://fakeRpcUrl', 'blockchain_test', 24, 1);
 
     parser.injectedPrices = getInjectedPrices();
 

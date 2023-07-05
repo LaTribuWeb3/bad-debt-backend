@@ -6,15 +6,23 @@ export class CompoundParser extends ProtocolParser {
   config: CompoundConfig;
   markets: string[];
   comptroller: Comptroller;
+  decimals: { [tokenAddress: string]: number };
 
-  constructor(config: CompoundConfig, rpcURL: string, heavyUpdateInterval = 24, fetchDelayInHours = 1) {
-    super(rpcURL, heavyUpdateInterval, fetchDelayInHours);
+  constructor(
+    config: CompoundConfig,
+    rpcURL: string,
+    outputJsonFileName: string,
+    heavyUpdateInterval?: number,
+    fetchDelayInHours?: number
+  ) {
+    super(rpcURL, outputJsonFileName, heavyUpdateInterval, fetchDelayInHours);
     this.config = config;
     this.markets = [];
     this.comptroller = Comptroller__factory.connect(config.comptrollerAddress, this.web3Provider);
+    this.decimals = {};
   }
 
-  async initPrices(): Promise<{ [tokenAddress: string]: number }> {
+  async initPrices(): Promise<void> {
     console.log(`${this.runnerName}: get markets`);
     this.markets = await this.comptroller.getAllMarkets();
     console.log(`${this.runnerName}: found markets:`, this.markets);
@@ -26,7 +34,7 @@ export class CompoundParser extends ProtocolParser {
 
     console.log(`${this.runnerName}: prices:`, prices);
 
-    return prices;
+    this.prices = prices;
   }
 
   heavyUpdate(blockNumber: number): Promise<void> {
