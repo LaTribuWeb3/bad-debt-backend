@@ -81,6 +81,7 @@ export abstract class ProtocolParser {
           );
 
           // if an error occurs, the process will restart after 10 minutes
+          console.log('sleeping 10 minutes before restarting');
           await sleep(1000 * 10 * 60);
         } else {
           // if onlyOnce == true, rethrow
@@ -90,6 +91,11 @@ export abstract class ProtocolParser {
     }
   }
 
+  /**
+   * this is the base function that CAN be overriden for certains parsers
+   * Example: MIM markets because of the number of calderons
+   * @returns
+   */
   async parseProtocol() {
     await this.initPrices();
 

@@ -1,4 +1,5 @@
 import { CToken__factory, Comptroller, Comptroller__factory } from '../../contracts/types';
+import { FetchAllEventsAndExtractStringArray } from '../../utils/EventHelper';
 import { GetEthPrice, GetPrice, getCTokenPriceFromZapper } from '../../utils/PriceHelper';
 import { GetTokenInfos } from '../../utils/TokenHelper';
 import { ProtocolParser } from '../ProtocolParser';
@@ -70,6 +71,13 @@ export class CompoundParser extends ProtocolParser {
   }
 
   override async fetchUsersData(blockNumber: number): Promise<void> {
-    throw new Error('Method not implemented.');
+    const users = await FetchAllEventsAndExtractStringArray(
+      this.comptroller,
+      'comptroller',
+      'MarketEntered',
+      ['account'],
+      this.config.deployBlock,
+      blockNumber
+    );
   }
 }
