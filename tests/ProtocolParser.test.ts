@@ -2,10 +2,22 @@ import BigNumber from 'bignumber.js';
 import { ProtocolParser } from '../src/parsers/ProtocolParser';
 import { CONSTANT_1e18 } from '../src/utils/Utils';
 import { UserData } from '../src/utils/Types';
+import { MonitoringStatusEnum } from '../src/utils/MonitoringHelper';
 
 class TestParser extends ProtocolParser {
   injectedPrices: { [tokenAddress: string]: number } | undefined;
   injectedUsers: { [key: string]: UserData } | undefined;
+
+  override async SendMonitoringData(
+    status: MonitoringStatusEnum,
+    start?: number | undefined,
+    end?: number | undefined,
+    duration?: number | undefined,
+    blockFetched?: number | undefined,
+    error?: string | undefined
+  ): Promise<void> {
+    // do nothing
+  }
 
   async getBlockNumAndTime() {
     return { currBlockNumber: 10, currTime: 125 };
