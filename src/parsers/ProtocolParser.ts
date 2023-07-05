@@ -2,7 +2,11 @@ import BigNumber from 'bignumber.js';
 import { ethers } from 'ethers';
 import { CONSTANT_1e18, retry, sleep } from '../utils/Utils';
 import { ParserResult, UserData } from '../utils/Types';
+import { MonitoringStatusEnum, RecordMonitoring } from '../utils/MonitoringHelper';
 
+/**
+ * This is the base class that every parser should inherit from
+ */
 export abstract class ProtocolParser {
   web3Provider: ethers.JsonRpcProvider;
   heavyUpdateInterval: number;
@@ -31,35 +35,66 @@ export abstract class ProtocolParser {
     let mainCntr = 0;
     // eslint-disable-next-line no-constant-condition
     while (true) {
-      this.prices = await this.initPrices();
+      try {
+        const start = Date.now();
+        await RecordMonitoring({
+          name: this.runnerName,
+          type: 'Bad Debt',
+          lastStart: Math.round(start / 1000),
+          runEvery: this.fetchDelayInHours * 60, // run every fetchDelayInHours hours
+          status: MonitoringStatusEnum.RUNNING
+        });
+        this.prices = await this.initPrices();
 
-      const { currBlockNumber, currTime } = await this.getBlockNumAndTime();
-      if (!currTime) {
-        throw new Error('Could not get currTime');
+        const { currBlockNumber, currTime } = await this.getBlockNumAndTime();
+        if (!currTime) {
+          throw new Error('Could not get currTime');
+        }
+
+        if (mainCntr % this.heavyUpdateInterval == 0) {
+          console.log(`${this.runnerName}: heavyUpdate start`);
+          await this.heavyUpdate(currBlockNumber);
+          console.log(
+            `${this.runnerName}: heavyUpdate success, current userList contains ${this.userList.length} users`
+          );
+        } else {
+          console.log(`${this.runnerName}: lightUpdate start`);
+          await this.lightUpdate(currBlockNumber);
+          console.log(`${this.runnerName}: lightUpdate success`);
+        }
+        console.log(`${this.runnerName}: calc bad debt`);
+        const parserResult = await this.calcBadDebt(currTime);
+
+        console.log(`${this.runnerName}: ${JSON.stringify(parserResult)}`);
+        this.lastUpdateBlock = currBlockNumber;
+
+        const runEndDate = Math.round(Date.now() / 1000);
+        await RecordMonitoring({
+          name: this.runnerName,
+          type: 'Bad Debt',
+          status: MonitoringStatusEnum.SUCCESS,
+          lastEnd: runEndDate,
+          lastDuration: runEndDate - Math.round(start / 1000)
+        });
+        // if onlyOnce is set, just return the result.
+        // it is used for debugging or unit testing purpose
+        if (onlyOnce) {
+          return parserResult;
+        }
+
+        console.log(`${this.runnerName}: sleeping ${this.fetchDelayInHours} hour(s). Fetch counter: ${mainCntr++}`);
+        await sleep(1000 * 3600 * this.fetchDelayInHours);
+      } catch (err) {
+        await RecordMonitoring({
+          name: this.runnerName,
+          type: 'Bad Debt',
+          status: MonitoringStatusEnum.ERROR,
+          error: `An exception occurred: ${err}`
+        });
+
+        // if an error occurs, the process will restart after 10 minutes
+        await sleep(1000 * 10 * 60);
       }
-
-      if (mainCntr % this.heavyUpdateInterval == 0) {
-        console.log(`${this.runnerName}: heavyUpdate start`);
-        await this.heavyUpdate(currBlockNumber);
-        console.log(`${this.runnerName}: heavyUpdate success, current userList contains ${this.userList.length} users`);
-      } else {
-        console.log(`${this.runnerName}: lightUpdate start`);
-        await this.lightUpdate(currBlockNumber);
-        console.log(`${this.runnerName}: lightUpdate success`);
-      }
-      console.log(`${this.runnerName}: calc bad debt`);
-      const parserResult = await this.calcBadDebt(currTime);
-
-      console.log(`${this.runnerName}: ${JSON.stringify(parserResult)}`);
-      this.lastUpdateBlock = currBlockNumber;
-
-      // if onlyOnce is set, just return the result.
-      // it is used for debugging or unit testing purpose
-      if (onlyOnce) {
-        return parserResult;
-      }
-      console.log(`${this.runnerName}: sleeping ${this.fetchDelayInHours} hour(s). Fetch counter: ${mainCntr++}`);
-      await sleep(1000 * 3600 * this.fetchDelayInHours);
     }
   }
 
