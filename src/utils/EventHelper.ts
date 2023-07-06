@@ -60,7 +60,7 @@ export async function FetchAllEventsAndExtractStringArray(
       // this try to change the blockstep by increasing it when the pool is not very used
       // or decreasing it when the pool is very used
       // in any case, should not set the new blockstep to more than 2 times the old one
-      const newBlockStep = Math.min(1_000_000, Math.round((blockStep * 8000) / events.length));
+      const newBlockStep = Math.min(10_000_000, Math.round((blockStep * 8000) / events.length));
       if (newBlockStep > blockStep * 2) {
         blockStep = blockStep * 2;
       } else {

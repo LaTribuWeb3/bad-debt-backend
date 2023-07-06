@@ -53,8 +53,8 @@ export class CompoundParser extends ProtocolParser {
       if (market == this.config.cETHAddress) {
         console.log(`${logPrefix} market is cETH, getting eth price`);
         prices[market] = await GetEthPrice(this.config.network);
-        // for cETH, consider underlying to be WETH
-        this.underlyings[market] = CONSTANTS.WETH_ADDRESS;
+        // for cETH, consider underlying to be ETH
+        this.underlyings[market] = CONSTANTS.ETH_ADDRESS;
         console.log(`${logPrefix} eth price = $${prices[market]}`);
         marketBalanceNormalized = normalize(await this.web3Provider.getBalance(market), 18);
         const ctokenContract = CToken__factory.connect(market, this.web3Provider);
