@@ -5,4 +5,7 @@ export interface CompoundConfig {
   deployBlock: number;
   defaultBlockStep: number; // this is the default block step used to fetch events
   multicallSize: number; // the amount of accounts that will be batched in a single multicall
+  multicallParallelSize: number; // the amount of parallelism for every multicalls
+  rektMarket: string[];
+  nonBorrowableMarkets: string[];
 }

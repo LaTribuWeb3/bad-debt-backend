@@ -1,4 +1,4 @@
-import { JsonRpcProvider, ethers, isError } from 'ethers';
+import { JsonRpcProvider, Result, ethers, isError } from 'ethers';
 import { Multicall__factory } from '../contracts/types';
 import { Multicall2 } from '../contracts/types/Multicall';
 
@@ -53,9 +53,9 @@ export async function ExecuteMulticall(
   network: string,
   web3Provider: JsonRpcProvider,
   callParams: MulticallParameter[]
-) {
-  console.log(`ExecuteMulticall: will multicall for ${callParams.length} calls`);
-  const abiCoder = new ethers.AbiCoder();
+): Promise<Result[]> {
+  // console.log(`ExecuteMulticall: will multicall for ${callParams.length} calls`);
+  const abiCoder = ethers.AbiCoder.defaultAbiCoder();
   const calls: Multicall2.CallStruct[] = [];
 
   for (let i = 0; i < callParams.length; i++) {
@@ -89,6 +89,7 @@ export async function ExecuteMulticall(
     const result = results[i];
     const callParam = callParams[i];
 
+    // const decoded = JSON.parse(JSON.stringify(abiCoder.decode(callParam.outputTypes, result.returnData)));
     const decoded = abiCoder.decode(callParam.outputTypes, result.returnData);
 
     // console.log(decoded.toString());

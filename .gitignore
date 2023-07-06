@@ -118,3 +118,6 @@ coverage/*
 
 # typechain contracts
 src/contracts/types
+
+# data dir
+data/

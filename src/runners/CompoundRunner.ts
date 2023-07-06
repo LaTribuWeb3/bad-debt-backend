@@ -9,7 +9,10 @@ const config: CompoundConfig = {
   deployBlock: 7710671,
   defaultBlockStep: 50000,
   multicallSize: 200,
-  network: 'ETH'
+  network: 'ETH',
+  multicallParallelSize: 10,
+  nonBorrowableMarkets: [],
+  rektMarket: []
 };
 
 async function RunCompoundParser() {
