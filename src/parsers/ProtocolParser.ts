@@ -125,13 +125,14 @@ export abstract class ProtocolParser {
       throw new Error('this.users is not initialized');
     }
 
-    console.log(`${this.runnerName}: calc bad debt`);
+    console.log(`${this.runnerName}: computing bad debt`);
     const parserResult = await this.calcBadDebt(currTime);
-
-    console.log(`${this.runnerName}: ${JSON.stringify(parserResult)}`);
+    console.log(`${this.runnerName}: bad debt calculation ended`);
     this.lastUpdateBlock = currBlockNumber;
 
+    console.log(`${this.runnerName}: sending results for file ${this.outputJsonFileName}`);
     await this.sendResults(parserResult);
+    console.log(`${this.runnerName}: parser results sent for file ${this.outputJsonFileName}`);
     return parserResult;
   }
 
@@ -265,17 +266,26 @@ export abstract class ProtocolParser {
 
       if (userNetValue < 0) {
         //const result = await this.comptroller.methods.getAccountLiquidity(user).call()
-        console.log(`${this.runnerName}: bad debt for user ${user}: ${userNetValue}`);
+        // console.log(`${this.runnerName}: bad debt for user ${user}: ${userNetValue}`);
         sumOfBadDebt += userNetValue;
 
-        console.log(`${this.runnerName}: total bad debt: ${sumOfBadDebt}`);
+        // console.log(`${this.runnerName}: total bad debt: ${sumOfBadDebt}`);
 
         usersWithBadDebt.push({ user: user, badDebt: new BigNumber(userNetValue).times(CONSTANTS.BN_1E18).toFixed() });
       }
     }
 
     console.log(`${this.runnerName} tvl: ${tvl}`);
+    console.log(`${this.runnerName} borrows: ${totalBorrow}`);
     console.log(`${this.runnerName} bad debt: ${sumOfBadDebt}`);
+
+    // if the class did not initialized this.tvl and this.borrow, set them to calculated value
+    if (!this.tvl) {
+      this.tvl = tvl;
+    }
+    if (!this.borrows) {
+      this.borrows = totalBorrow;
+    }
 
     return {
       total: new BigNumber(sumOfBadDebt).times(CONSTANTS.BN_1E18).toFixed(),

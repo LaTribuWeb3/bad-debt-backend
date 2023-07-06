@@ -38,7 +38,7 @@ export async function GetTokenInfos(network: string, address: string): Promise<T
       tokenInfosCache[network] = {};
     }
 
-    console.log(`GetTokenInfos[${network}]: getting infos for ${address}`);
+    // console.log(`GetTokenInfos[${network}]: getting infos for ${address}`);
     const fullUrl = `${web3ApiUrl}/api/token/infos?network=${network}&tokenAddress=${address}`;
     const axiosResp: any = await retry(axios.get, [fullUrl]);
     tokenInfosCache[network][address] = axiosResp.data;

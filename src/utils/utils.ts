@@ -36,3 +36,8 @@ export function normalize(amount: string | bigint, decimals: number): number {
   const factor = new BigNumber(10).pow(decimals);
   return bn.div(factor).toNumber();
 }
+
+export function roundTo(num: number, dec = 2): number {
+  const pow = Math.pow(10, dec);
+  return Math.round((num + Number.EPSILON) * pow) / pow;
+}

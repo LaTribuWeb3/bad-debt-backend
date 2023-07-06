@@ -5,7 +5,7 @@ import { ExecuteMulticall, MulticallParameter } from '../../utils/MulticallHelpe
 import { GetEthPrice, GetPrice, getCTokenPriceFromZapper } from '../../utils/PriceHelper';
 import { GetTokenInfos } from '../../utils/TokenHelper';
 import { LoadUserListFromDisk, SaveUserListToDisk } from '../../utils/UserHelper';
-import { normalize, sleep } from '../../utils/Utils';
+import { normalize, roundTo, sleep } from '../../utils/Utils';
 import { ProtocolParser } from '../ProtocolParser';
 import { CompoundConfig } from './CompoundConfig';
 
@@ -134,7 +134,11 @@ export class CompoundParser extends ProtocolParser {
       }
 
       const userAddresses = usersToUpdate.slice(startIndex, endIndex);
-      console.log(`starting multicall for user indexes: [${startIndex} -> ${endIndex - 1}]`);
+      console.log(
+        `starting multicall for user indexes: [${startIndex} -> ${endIndex - 1}]. ${roundTo(
+          (endIndex / usersToUpdate.length) * 100
+        )}%`
+      );
       promises.push(this.updateUsersWithMulticall(userAddresses));
       await sleep(1000);
 
@@ -230,19 +234,23 @@ export class CompoundParser extends ProtocolParser {
           marketTokenInfos.decimals
         );
 
-        if (!this.users[selectedUser]) {
-          this.users[selectedUser] = {
-            collaterals: {},
-            debts: {}
-          };
-        }
+        // only save user if he has any value (collateral or borrow)
+        // this is done to save some RAM
+        if (normalizedCollateralResultForMarket > 0 || normalizedBorrowResultForMarket > 0) {
+          if (!this.users[selectedUser]) {
+            this.users[selectedUser] = {
+              collaterals: {},
+              debts: {}
+            };
+          }
 
-        // only save value if not 0 to save RAM
-        if (normalizedCollateralResultForMarket > 0) {
-          this.users[selectedUser].collaterals[market] = normalizedCollateralResultForMarket;
-        }
-        if (normalizedBorrowResultForMarket > 0) {
-          this.users[selectedUser].debts[market] = normalizedBorrowResultForMarket;
+          // only save value if not 0 to save RAM
+          if (normalizedCollateralResultForMarket > 0) {
+            this.users[selectedUser].collaterals[market] = normalizedCollateralResultForMarket;
+          }
+          if (normalizedBorrowResultForMarket > 0) {
+            this.users[selectedUser].debts[market] = normalizedBorrowResultForMarket;
+          }
         }
 
         index++;
