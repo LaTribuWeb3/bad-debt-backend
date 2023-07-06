@@ -31,8 +31,6 @@ export async function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-export const CONSTANT_1e18 = new BigNumber(10).pow(18);
-
 export function normalize(amount: string | bigint, decimals: number): number {
   const bn = new BigNumber(amount.toString());
   const factor = new BigNumber(10).pow(decimals);

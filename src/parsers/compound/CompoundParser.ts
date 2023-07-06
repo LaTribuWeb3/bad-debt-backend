@@ -1,11 +1,11 @@
-import { CToken__factory, Comptroller, Comptroller__factory } from '../../contracts/types';
-import { Constants } from '../../utils/Constants';
+import { CToken__factory, Comptroller, Comptroller__factory, ERC20__factory } from '../../contracts/types';
+import { CONSTANTS } from '../../utils/Constants';
 import { FetchAllEventsAndExtractStringArray } from '../../utils/EventHelper';
 import { ExecuteMulticall, MulticallParameter } from '../../utils/MulticallHelper';
 import { GetEthPrice, GetPrice, getCTokenPriceFromZapper } from '../../utils/PriceHelper';
 import { GetTokenInfos } from '../../utils/TokenHelper';
 import { LoadUserListFromDisk, SaveUserListToDisk } from '../../utils/UserHelper';
-import { normalize } from '../../utils/Utils';
+import { normalize, sleep } from '../../utils/Utils';
 import { ProtocolParser } from '../ProtocolParser';
 import { CompoundConfig } from './CompoundConfig';
 
@@ -41,8 +41,12 @@ export class CompoundParser extends ProtocolParser {
     this.markets = await this.comptroller.getAllMarkets();
     console.log(`${logPrefix} found ${this.markets.length} markets`);
 
+    this.tvl = 0;
+    this.borrows = 0;
     const prices: { [tokenAddress: string]: number } = {};
     for (const market of this.markets) {
+      let marketBalanceNormalized = 0;
+      let marketBorrowsNormalized = 0;
       const marketInfos = await GetTokenInfos(this.config.network, market);
       logPrefix = `${this.runnerName} | initPrices | ${marketInfos.symbol} |`;
       console.log(`${logPrefix} working on ${marketInfos.symbol}`);
@@ -50,8 +54,11 @@ export class CompoundParser extends ProtocolParser {
         console.log(`${logPrefix} market is cETH, getting eth price`);
         prices[market] = await GetEthPrice(this.config.network);
         // for cETH, consider underlying to be WETH
-        this.underlyings[market] = Constants.WETH_ADDRESS;
+        this.underlyings[market] = CONSTANTS.WETH_ADDRESS;
         console.log(`${logPrefix} eth price = $${prices[market]}`);
+        marketBalanceNormalized = normalize(await this.web3Provider.getBalance(market), 18);
+        const ctokenContract = CToken__factory.connect(market, this.web3Provider);
+        marketBorrowsNormalized = normalize(await ctokenContract.totalBorrows(), 18);
       } else {
         console.log(`${logPrefix} getting underlying`);
         const ctokenContract = CToken__factory.connect(market, this.web3Provider);
@@ -65,6 +72,14 @@ export class CompoundParser extends ProtocolParser {
           prices[market] = await getCTokenPriceFromZapper(market, underlying, this.web3Provider, this.config.network);
         }
         console.log(`${logPrefix} price is ${prices[market]}`);
+        const underlyingErc20Contract = ERC20__factory.connect(underlying, this.web3Provider);
+        marketBalanceNormalized = normalize(await underlyingErc20Contract.balanceOf(market), underlyingInfos.decimals);
+
+        if (this.nonBorrowableMarkets.includes(market)) {
+          marketBorrowsNormalized = 0;
+        } else {
+          marketBorrowsNormalized = normalize(await ctokenContract.totalBorrows(), underlyingInfos.decimals);
+        }
       }
 
       if (prices[market] == 0) {
@@ -72,6 +87,11 @@ export class CompoundParser extends ProtocolParser {
         prices[market] = await this.getFallbackPrice(market);
         console.log(`${logPrefix} price is ${prices[market]}`);
       }
+
+      const marketBalanceUsd = marketBalanceNormalized * prices[market];
+      this.tvl += marketBalanceUsd;
+      const marketBorrowsUsd = marketBorrowsNormalized * prices[market];
+      this.borrows += marketBorrowsUsd;
     }
 
     console.log(`${this.runnerName} | initPrices | prices:`, prices);
@@ -114,11 +134,12 @@ export class CompoundParser extends ProtocolParser {
       }
 
       const userAddresses = usersToUpdate.slice(startIndex, endIndex);
-      console.log(`starting multicall for user index [${startIndex} -> ${endIndex - 1}]`);
+      console.log(`starting multicall for user indexes: [${startIndex} -> ${endIndex - 1}]`);
       promises.push(this.updateUsersWithMulticall(userAddresses));
+      await sleep(1000);
 
       if (promises.length >= this.config.multicallParallelSize) {
-        console.log('awaiting promises');
+        // console.log('awaiting multicalls');
         await Promise.all(promises);
         promises = [];
       }
@@ -216,8 +237,13 @@ export class CompoundParser extends ProtocolParser {
           };
         }
 
-        this.users[selectedUser].collaterals[market] = normalizedCollateralResultForMarket;
-        this.users[selectedUser].debts[market] = normalizedBorrowResultForMarket;
+        // only save value if not 0 to save RAM
+        if (normalizedCollateralResultForMarket > 0) {
+          this.users[selectedUser].collaterals[market] = normalizedCollateralResultForMarket;
+        }
+        if (normalizedBorrowResultForMarket > 0) {
+          this.users[selectedUser].debts[market] = normalizedBorrowResultForMarket;
+        }
 
         index++;
       }

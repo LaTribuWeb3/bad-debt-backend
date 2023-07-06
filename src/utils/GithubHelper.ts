@@ -2,12 +2,27 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 import { Octokit } from 'octokit';
 
-// IS_STAGING is default
-const IS_STAGING = process.env.STAGING_ENV && process.env.STAGING_ENV.toLowerCase() == 'false';
-const REPO_PATH = IS_STAGING ? 'bad-debt-staging' : 'bad-debt';
+const appEnv = process.env.APP_ENV;
+if (!appEnv) {
+  throw new Error('Could not find env variable APP_ENV');
+}
 
+const githubToken = process.env.GH_TOKEN;
+
+if (!githubToken) {
+  throw new Error('Could not find env variable GH_TOKEN');
+}
+
+let REPO_PATH = '';
+if (appEnv.toLowerCase() == 'staging') {
+  REPO_PATH = 'bad-debt-staging';
+} else if (appEnv.toLowerCase() == 'prod') {
+  REPO_PATH = 'bad-debt';
+} else {
+  throw new Error('Unrecognized appEnv: should be prod or staging');
+}
 const octokit = new Octokit({
-  auth: process.env.GH_TOKEN
+  auth: githubToken
 });
 
 async function getFileSha(fileName: string, day?: string) {
@@ -44,7 +59,7 @@ export async function UploadJsonFile(jsonString: string, fileName: string, day?:
       message: `bad-debt push ${new Date().toString()}`,
       sha,
       committer: {
-        name: process.env.GH_HANDLE,
+        name: 'bad-debt-backend',
         email: 'octocat@github.com'
       },
       content: Buffer.from(jsonString).toString('base64')

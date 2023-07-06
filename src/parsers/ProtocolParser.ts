@@ -1,11 +1,12 @@
 import BigNumber from 'bignumber.js';
 import { UnmanagedSubscriber, ethers } from 'ethers';
-import { CONSTANT_1e18, retry, sleep } from '../utils/Utils';
+import { retry, sleep } from '../utils/Utils';
 import { ParserResult, UserData } from '../utils/Types';
 import { MonitoringData, MonitoringStatusEnum, RecordMonitoring } from '../utils/MonitoringHelper';
 import { UploadJsonFile } from '../utils/GithubHelper';
 import fs from 'fs';
 import path from 'path';
+import { CONSTANTS } from '../utils/Constants';
 
 /**
  * This is the base class that every parser should inherit from
@@ -22,6 +23,8 @@ export abstract class ProtocolParser {
   prices: { [tokenAddress: string]: number };
   outputJsonFileName: string;
   lastHeavyUpdate = 0;
+  tvl = 0;
+  borrows = 0;
 
   constructor(rpcURL: string, outputJsonFileName: string, heavyUpdateInterval = 24, fetchDelayInHours = 1) {
     this.runnerName = `${this.constructor.name}-Runner`;
@@ -58,16 +61,21 @@ export abstract class ProtocolParser {
         }
 
         const runEndDate = Math.round(Date.now() / 1000);
+        const durationSec = runEndDate - Math.round(start / 1000);
         await this.SendMonitoringData(
           MonitoringStatusEnum.SUCCESS,
           undefined,
           runEndDate,
-          runEndDate - Math.round(start / 1000),
+          durationSec,
           this.lastUpdateBlock
         );
 
-        console.log(`${this.runnerName}: sleeping ${this.fetchDelayInHours} hour(s)`);
-        await sleep(1000 * 3600 * this.fetchDelayInHours);
+        // sleep for 'fetchDelayInHours' hours minus the time it took to run the parser
+        const sleepTime = 1000 * 3600 * this.fetchDelayInHours - durationSec * 1000;
+        if (sleepTime > 0) {
+          console.log(`${this.runnerName}: sleeping ${Math.round(sleepTime / 1000)} seconds`);
+          await sleep(sleepTime);
+        }
       } catch (err) {
         console.error(`${this.runnerName}: An exception occurred: ${err}`);
         if (!onlyOnce) {
@@ -201,7 +209,7 @@ export abstract class ProtocolParser {
    * @returns user additional collateral value in $
    */
   async additionalCollateralBalance(userAddress: string): Promise<number> {
-    console.log(`additionalCollateralBalance[${userAddress}]: 0`);
+    // console.log(`additionalCollateralBalance[${userAddress}]: 0`);
     return 0;
   }
 
@@ -262,18 +270,22 @@ export abstract class ProtocolParser {
 
         console.log(`${this.runnerName}: total bad debt: ${sumOfBadDebt}`);
 
-        usersWithBadDebt.push({ user: user, badDebt: new BigNumber(userNetValue).times(CONSTANT_1e18).toFixed() });
+        usersWithBadDebt.push({ user: user, badDebt: new BigNumber(userNetValue).times(CONSTANTS.BN_1E18).toFixed() });
       }
     }
 
+    console.log(`${this.runnerName} tvl: ${tvl}`);
+    console.log(`${this.runnerName} bad debt: ${sumOfBadDebt}`);
+
     return {
-      borrows: new BigNumber(totalBorrow).times(CONSTANT_1e18).toFixed(),
-      decimals: 18,
-      deposits: new BigNumber(totalCollateral).times(CONSTANT_1e18).toFixed(),
-      tvl: new BigNumber(tvl).times(CONSTANT_1e18).toFixed(),
+      total: new BigNumber(sumOfBadDebt).times(CONSTANTS.BN_1E18).toFixed(),
+      updated: currTime.toString(),
+      decimals: '18',
       users: usersWithBadDebt,
-      total: new BigNumber(sumOfBadDebt).times(CONSTANT_1e18).toFixed(),
-      updated: currTime
+      tvl: new BigNumber(this.tvl).times(CONSTANTS.BN_1E18).toFixed(),
+      deposits: new BigNumber(totalCollateral).times(CONSTANTS.BN_1E18).toFixed(),
+      borrows: new BigNumber(this.borrows).times(CONSTANTS.BN_1E18).toFixed(),
+      calculatedBorrows: new BigNumber(totalBorrow).times(CONSTANTS.BN_1E18).toFixed()
     };
   }
 }

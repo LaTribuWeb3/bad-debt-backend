@@ -12,10 +12,11 @@ export interface TokenData {
 
 export interface ParserResult {
   total: string;
-  updated: number;
-  decimals: number;
+  updated: string;
+  decimals: string;
   users: { user: string; badDebt: string }[];
   tvl: string;
   deposits: string;
   borrows: string;
+  calculatedBorrows: string;
 }
