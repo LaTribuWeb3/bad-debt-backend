@@ -164,7 +164,7 @@ export abstract class ProtocolParser {
       name: this.runnerName,
       type: 'Bad Debt',
       status: status,
-      runEvery: this.fetchDelayInHours * 60
+      runEvery: this.fetchDelayInHours * 60 * 60
     };
 
     if (start) {

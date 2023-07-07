@@ -140,7 +140,7 @@ export class CompoundParser extends ProtocolParser {
         )}%`
       );
       promises.push(this.updateUsersWithMulticall(userAddresses));
-      await sleep(1000);
+      await sleep(100);
 
       if (promises.length >= this.config.multicallParallelSize) {
         // console.log('awaiting multicalls');
