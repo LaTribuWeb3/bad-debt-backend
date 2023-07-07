@@ -135,7 +135,7 @@ export class CompoundParser extends ProtocolParser {
 
       const userAddresses = usersToUpdate.slice(startIndex, endIndex);
       console.log(
-        `starting multicall for user indexes: [${startIndex} -> ${endIndex - 1}]. ${roundTo(
+        `updateUsers: fetching users [${startIndex} -> ${endIndex - 1}]. Progress: ${roundTo(
           (endIndex / usersToUpdate.length) * 100
         )}%`
       );

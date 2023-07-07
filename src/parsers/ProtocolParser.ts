@@ -288,14 +288,14 @@ export abstract class ProtocolParser {
     console.log(`${this.runnerName} bad debt: ${sumOfBadDebt}`);
 
     return {
-      total: new BigNumber(sumOfBadDebt).times(CONSTANTS.BN_1E18).toFixed(),
+      total: new BigNumber(sumOfBadDebt).times(CONSTANTS.BN_1E18).toFixed(0),
       updated: currTime.toString(),
       decimals: '18',
       users: usersWithBadDebt,
-      tvl: new BigNumber(this.tvl).times(CONSTANTS.BN_1E18).toFixed(),
-      deposits: new BigNumber(totalCollateral).times(CONSTANTS.BN_1E18).toFixed(),
-      borrows: new BigNumber(this.borrows).times(CONSTANTS.BN_1E18).toFixed(),
-      calculatedBorrows: new BigNumber(totalBorrow).times(CONSTANTS.BN_1E18).toFixed()
+      tvl: new BigNumber(this.tvl).times(CONSTANTS.BN_1E18).toFixed(0),
+      deposits: new BigNumber(totalCollateral).times(CONSTANTS.BN_1E18).toFixed(0),
+      borrows: new BigNumber(this.borrows).times(CONSTANTS.BN_1E18).toFixed(0),
+      calculatedBorrows: new BigNumber(totalBorrow).times(CONSTANTS.BN_1E18).toFixed(0)
     };
   }
 }

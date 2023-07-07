@@ -1,5 +1,24 @@
 import BigNumber from 'bignumber.js';
 
+export function GetRpcUrlForNetwork(network: string) {
+  switch (network.toUpperCase()) {
+    case 'ETH':
+      return process.env.RPC_URL_ETH;
+    case 'BSC':
+      return process.env.RPC_URL_BSC;
+    case 'CRONOS':
+      return process.env.RPC_URL_CRONOS;
+    case 'MATIC':
+      return process.env.RPC_URL_MATIC;
+    case 'GNOSIS':
+      return process.env.RPC_URL_GNOSIS;
+    case 'NEAR':
+      return process.env.RPC_URL_NEAR;
+    case 'OPTIMISM':
+      return process.env.RPC_URL_OPTIMISM;
+  }
+}
+
 /**
  * Retries a function n number of times before giving up
  */
