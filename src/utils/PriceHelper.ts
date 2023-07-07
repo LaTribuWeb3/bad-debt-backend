@@ -136,57 +136,45 @@ export async function GetEthPrice(network: string): Promise<number> {
   }
 }
 
+async function GetSimplePrice(currency: string): Promise<number> {
+  const fullUrl = `${web3ApiUrl}/api/price/simple?currency=${currency}`;
+  const axiosResp = await axios.get(fullUrl);
+  return Number(axiosResp.data.priceUSD);
+}
+
 const chainTokenFetchers = {
   MOONBEAM: async () => {
     return 0;
   },
   OPTIMISM: async () => {
-    const axiosResp = await axios.get('https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=USD');
-    return axiosResp.data.ethereum.usd || 0;
+    return await retry(GetSimplePrice, ['ethereum']);
   },
   GNOSIS: async () => {
-    const axiosResp = await axios.get('https://api.coingecko.com/api/v3/simple/price?ids=dai&vs_currencies=USD');
-    return axiosResp.data.dai.usd || 0;
+    return await retry(GetSimplePrice, ['dai']);
   },
   ARBITRUM: async () => {
-    const axiosResp = await axios.get('https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=USD');
-    return axiosResp.data.ethereum.usd || 0;
+    return await retry(GetSimplePrice, ['ethereum']);
   },
   NEAR: async () => {
-    const axiosResp = await axios.get('https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=USD');
-    return axiosResp.data.ethereum.usd || 0;
+    return await retry(GetSimplePrice, ['ethereum']);
   },
   ETH: async () => {
-    const axiosResp = await axios.get('https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=USD');
-    return axiosResp.data.ethereum.usd || 0;
+    return await retry(GetSimplePrice, ['ethereum']);
   },
   AVAX: async () => {
-    const axiosResp = await axios.get(
-      'https://api.coingecko.com/api/v3/simple/price?ids=avalanche-2&vs_currencies=USD'
-    );
-    return axiosResp.data['avalanche-2'].usd || 0;
+    return await retry(GetSimplePrice, ['avalanche-2']);
   },
   MATIC: async () => {
-    const axiosResp = await axios.get(
-      'https://api.coingecko.com/api/v3/simple/price?ids=matic-network&vs_currencies=USD'
-    );
-    return axiosResp.data['matic-network'].usd || 0;
+    return await retry(GetSimplePrice, ['matic-network']);
   },
   BSC: async () => {
-    const axiosResp = await axios.get(
-      'https://api.coingecko.com/api/v3/simple/price?ids=binancecoin&vs_currencies=USD'
-    );
-    return axiosResp.data['binancecoin'].usd || 0;
+    return await retry(GetSimplePrice, ['binancecoin']);
   },
   FTM: async () => {
-    const axiosResp = await axios.get('https://api.coingecko.com/api/v3/simple/price?ids=fantom&vs_currencies=USD');
-    return axiosResp.data['fantom'].usd || 0;
+    return await retry(GetSimplePrice, ['fantom']);
   },
   CRO: async () => {
-    const axiosResp = await axios.get(
-      'https://api.coingecko.com/api/v3/simple/price?ids=crypto-com-chain&vs_currencies=USD'
-    );
-    return axiosResp.data['crypto-com-chain'].usd || 0;
+    return await retry(GetSimplePrice, ['crypto-com-chain']);
   }
 };
 
