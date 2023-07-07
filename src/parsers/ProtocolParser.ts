@@ -275,10 +275,6 @@ export abstract class ProtocolParser {
       }
     }
 
-    console.log(`${this.runnerName} tvl: ${tvl}`);
-    console.log(`${this.runnerName} borrows: ${totalBorrow}`);
-    console.log(`${this.runnerName} bad debt: ${sumOfBadDebt}`);
-
     // if the class did not initialized this.tvl and this.borrow, set them to calculated value
     if (!this.tvl) {
       this.tvl = tvl;
@@ -286,6 +282,10 @@ export abstract class ProtocolParser {
     if (!this.borrows) {
       this.borrows = totalBorrow;
     }
+
+    console.log(`${this.runnerName} tvl: ${this.tvl}`);
+    console.log(`${this.runnerName} borrows: ${this.borrows}`);
+    console.log(`${this.runnerName} bad debt: ${sumOfBadDebt}`);
 
     return {
       total: new BigNumber(sumOfBadDebt).times(CONSTANTS.BN_1E18).toFixed(),
