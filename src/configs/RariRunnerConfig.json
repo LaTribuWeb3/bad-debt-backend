@@ -3,7 +3,7 @@
     "cETHAddress": "0xF6551C22276b9Bf62FaD09f6bD6Cad0264b89789",
     "deployBlock": 12860109,
     "defaultBlockStep": 50000,
-    "multicallSize": 200,
+    "multicallSize": 100,
     "multicallParallelSize": 10,
     "network": "ETH",
     "nonBorrowableMarkets": [],
