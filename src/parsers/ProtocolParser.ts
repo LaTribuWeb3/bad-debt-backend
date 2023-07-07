@@ -283,9 +283,9 @@ export abstract class ProtocolParser {
       this.borrows = totalBorrow;
     }
 
-    console.log(`${this.runnerName} tvl: ${this.tvl}`);
-    console.log(`${this.runnerName} borrows: ${this.borrows}`);
-    console.log(`${this.runnerName} bad debt: ${sumOfBadDebt}`);
+    console.log(`${this.runnerName}: tvl: ${this.tvl}`);
+    console.log(`${this.runnerName}: borrows: ${this.borrows}`);
+    console.log(`${this.runnerName}: bad debt: ${sumOfBadDebt}`);
 
     return {
       total: new BigNumber(sumOfBadDebt).times(CONSTANTS.BN_1E18).toFixed(0),
