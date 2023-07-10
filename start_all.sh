@@ -1,25 +1,28 @@
+# this script should only be used with correctly configured pm2 config file
+# this is not used to testing (named bad-debt-backend.pm2.config.js)
+
 echo "Restarting all bad debt runners"
-pm2 reset all -s
-echo "bdts-opt-sonne"
 pm2 restart bad-debt-backend.pm2.config.js --only bdts-opt-sonne -s
-sleep 300
-echo "bdts-aurora-aurigami"
+echo "started bdts-opt-sonne. Waiting before starting next"
+sleep 180
 pm2 restart bad-debt-backend.pm2.config.js --only bdts-aurora-aurigami -s
-sleep 300
-echo "bdts-eth-rari"
+echo "started bdts-aurora-aurigami. Waiting before starting next"
+sleep 180
 pm2 restart bad-debt-backend.pm2.config.js --only bdts-eth-rari -s
-sleep 300
-echo "bdts-eth-compound"
+echo "started bdts-eth-rari. Waiting before starting next"
+sleep 180
 pm2 restart bad-debt-backend.pm2.config.js --only bdts-eth-compound -s
-sleep 300
-echo "bdts-bsc-rikkei"
+echo "started bdts-eth-compound. Waiting before starting next"
+sleep 180
 pm2 restart bad-debt-backend.pm2.config.js --only bdts-bsc-rikkei -s
-sleep 300
-echo "bdts-avax-traderjoe"
+echo "started bdts-bsc-rikkei. Waiting before starting next"
+sleep 180
 pm2 restart bad-debt-backend.pm2.config.js --only bdts-avax-traderjoe -s
-sleep 300
-echo "bdts-aurora-bastion"
+echo "started bdts-avax-traderjoe. Waiting before starting next"
+sleep 180
 pm2 restart bad-debt-backend.pm2.config.js --only bdts-aurora-bastion -s
-sleep 300
-echo "bdts-matic-0vix"
+echo "started bdts-aurora-bastion. Waiting before starting next"
+sleep 180
 pm2 restart bad-debt-backend.pm2.config.js --only bdts-matic-0vix -s
+echo "started bdts-matic-0vix. Waiting before starting next"
+pm2 reset all
