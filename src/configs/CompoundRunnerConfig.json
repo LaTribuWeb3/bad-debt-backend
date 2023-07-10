@@ -4,7 +4,7 @@
     "deployBlock": 7710671,
     "defaultBlockStep": 50000,
     "multicallSize": 200,
-    "multicallParallelSize": 10,
+    "multicallParallelSize": 5,
     "network": "ETH",
     "nonBorrowableMarkets": [],
     "rektMarket": []

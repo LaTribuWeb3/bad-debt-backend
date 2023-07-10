@@ -4,7 +4,7 @@
     "deployBlock": 26050051,
     "defaultBlockStep": 50000,
     "multicallSize": 100,
-    "multicallParallelSize": 10,
+    "multicallParallelSize": 5,
     "network": "OPTIMISM",
     "nonBorrowableMarkets": [],
     "rektMarket": []
