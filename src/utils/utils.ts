@@ -27,6 +27,7 @@ export async function retry<T extends (...arg0: any[]) => any>(
   fn: T,
   args: Parameters<T>,
   maxTry = 10,
+  incrSleepDelay = 1000,
   retryCount = 1
 ): Promise<Awaited<ReturnType<T>>> {
   const currRetry = typeof retryCount === 'number' ? retryCount : 1;
@@ -41,7 +42,7 @@ export async function retry<T extends (...arg0: any[]) => any>(
     console.log(`Retry ${currRetry} failed.`);
     console.log(e);
     console.log(`Waiting ${retryCount} second(s)`);
-    await sleep(1000 * retryCount);
+    await sleep(incrSleepDelay * retryCount);
     return retry(fn, args, maxTry, currRetry + 1);
   }
 }

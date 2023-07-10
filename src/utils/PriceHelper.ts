@@ -138,7 +138,8 @@ export async function GetEthPrice(network: string): Promise<number> {
 
 async function GetSimplePrice(currency: string): Promise<number> {
   const fullUrl = `${web3ApiUrl}/api/price/simple?currency=${currency}`;
-  const axiosResp = await axios.get(fullUrl);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const axiosResp: any = await retry(axios.get, [fullUrl], 50, 5000);
   return Number(axiosResp.data.priceUSD);
 }
 
@@ -188,7 +189,8 @@ export async function GetPrice(network: string, address: string, web3Provider: J
     return apiPrice;
   }
   const fullUrl = `${web3ApiUrl}/api/price?network=${network}&tokenAddress=${address}`;
-  const axiosResp = await axios.get(fullUrl);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const axiosResp: any = await retry(axios.get, [fullUrl], 50, 5000);
   //console.log(data)
   return axiosResp.data.priceUSD || 0;
 }
