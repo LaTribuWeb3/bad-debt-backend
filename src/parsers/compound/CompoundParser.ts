@@ -271,7 +271,8 @@ export class CompoundParser extends ProtocolParser {
       'MarketEntered',
       ['account'],
       firstBlockToFetch,
-      targetBlockNumber
+      targetBlockNumber,
+      this.config.blockStepLimit
     );
 
     // merge into this.userList with old userList without duplicates
@@ -311,7 +312,8 @@ export class CompoundParser extends ProtocolParser {
           eventName,
           eventArgs,
           this.lastUpdateBlock,
-          targetBlockNumber
+          targetBlockNumber,
+          this.config.blockStepLimit
         );
         // merge with usersToUpdate
         usersToUpdate = Array.from(new Set(usersToUpdate.concat(fetchedAccounts)));

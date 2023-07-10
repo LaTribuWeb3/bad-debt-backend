@@ -1,5 +1,5 @@
 import BigNumber from 'bignumber.js';
-import { UnmanagedSubscriber, ethers } from 'ethers';
+import { ethers } from 'ethers';
 import { retry, sleep } from '../utils/Utils';
 import { ParserResult, UserData } from '../utils/Types';
 import { MonitoringData, MonitoringStatusEnum, RecordMonitoring } from '../utils/MonitoringHelper';
@@ -47,6 +47,13 @@ export abstract class ProtocolParser {
   async main(onlyOnce = false): Promise<ParserResult> {
     // eslint-disable-next-line no-constant-condition
     while (true) {
+      try {
+        const network = await this.web3Provider._detectNetwork();
+        console.log(`connected to ${network.name} network`);
+      } catch (err) {
+        console.log(err);
+      }
+
       try {
         const start = Date.now();
         if (!onlyOnce) {

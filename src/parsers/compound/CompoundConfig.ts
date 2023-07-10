@@ -3,7 +3,7 @@ export interface CompoundConfig {
   comptrollerAddress: string;
   cETHAddress: string;
   deployBlock: number;
-  defaultBlockStep: number; // this is the default block step used to fetch events
+  blockStepLimit?: number; // this is the block step limit when fetching events
   multicallSize: number; // the amount of accounts that will be batched in a single multicall
   multicallParallelSize: number; // the amount of parallelism for every multicalls
   rektMarket: string[];

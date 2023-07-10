@@ -2,15 +2,17 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 import { Octokit } from 'octokit';
 
-const appEnv = process.env.APP_ENV;
+let appEnv = process.env.APP_ENV;
 if (!appEnv) {
-  throw new Error('Could not find env variable APP_ENV');
+  // Default to staging
+  appEnv = 'staging';
 }
 
 const githubToken = process.env.GH_TOKEN;
 
-if (!githubToken) {
-  throw new Error('Could not find env variable GH_TOKEN');
+let uploadFilesToGithub = false;
+if (process.env.UPLOAD_FILES) {
+  uploadFilesToGithub = true;
 }
 
 let REPO_PATH = '';
@@ -47,6 +49,13 @@ function getDay() {
 }
 
 export async function UploadJsonFile(jsonString: string, fileName: string, day?: string) {
+  if (!uploadFilesToGithub) {
+    return;
+  }
+
+  if (!githubToken) {
+    throw new Error('Could not find env variable GH_TOKEN');
+  }
   try {
     const sha = await getFileSha(fileName, day);
     if (!day) {

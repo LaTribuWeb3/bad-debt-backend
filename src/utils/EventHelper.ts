@@ -80,7 +80,7 @@ export async function FetchAllEventsAndExtractStringArray(
     cptError = 0;
     fromBlock = toBlock + 1;
 
-    if (blockStepLimit) {
+    if (blockStepLimit && blockStep > blockStepLimit) {
       blockStep = blockStepLimit;
     }
   }

@@ -2,7 +2,6 @@
     "comptrollerAddress": "0x814b02C1ebc9164972D888495927fe1697F0Fb4c",
     "cETHAddress": "0xF6551C22276b9Bf62FaD09f6bD6Cad0264b89789",
     "deployBlock": 12860109,
-    "defaultBlockStep": 50000,
     "multicallSize": 100,
     "multicallParallelSize": 5,
     "network": "ETH",

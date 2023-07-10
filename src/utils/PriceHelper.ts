@@ -19,11 +19,6 @@ if (!web3ApiUrl) {
   throw new Error('Cannot find WEB3_API_URL in env variables');
 }
 
-const zapperKey = process.env.ZAPPER_KEY;
-if (!zapperKey) {
-  throw new Error('Cannot find ZAPPER_KEY in env variables');
-}
-
 export async function getCTokenPriceFromZapper(
   ctoken: string,
   underlying: string,
@@ -51,8 +46,13 @@ export async function getCTokenPriceFromZapper(
   return normalizedUSDValue;
 }
 
-const base64ZapperKey = Buffer.from(zapperKey).toString('base64');
 async function fetchZapperTotal(address: string): Promise<number> {
+  const zapperKey = process.env.ZAPPER_KEY;
+  if (!zapperKey) {
+    throw new Error('Cannot find ZAPPER_KEY in env variables');
+  }
+  const base64ZapperKey = Buffer.from(zapperKey).toString('base64');
+
   try {
     const headers = {
       'Cache-Control': 'no-cache',
