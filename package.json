@@ -5,6 +5,7 @@
     "scripts": {
         "start": "ts-node ./src/index.ts",
         "build": "rimraf ./build && tsc",
+        "deploy": "npm run build && scp -p package.json $BAD_DEBT_BACKEND:/app/bad-debt-backend/package.json && scp -r -p ./build/* $BAD_DEBT_BACKEND:/app/bad-debt-backend",
         "lint": "eslint . --ext .ts",
         "lintfix": "eslint . --ext .ts --fix",
         "prettier-format": "prettier --config .prettierrc \"./src/**/*.ts\" \"./tests/**/*.ts\" --write",

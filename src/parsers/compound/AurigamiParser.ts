@@ -1,6 +1,105 @@
+import { ExecuteMulticall, MulticallParameter } from '../../utils/MulticallHelper';
+import { GetTokenInfos } from '../../utils/TokenHelper';
+import { normalize } from '../../utils/Utils';
 import { CompoundParser } from './CompoundParser';
 
 /**
  * Aurigami parser is a compound fork without specificities
  */
-export class AurigamiParser extends CompoundParser {}
+export class AurigamiParser extends CompoundParser {
+  /**
+   * Aurigami implemented getAccountSnapshot with only 3 uint256 as the return value (instead of 4 for compound)
+   * This override is only needed for this change, nothing else changed from the compound function
+   * @param userAddresses
+   */
+  override async updateUsersWithMulticall(userAddresses: string[]) {
+    const assetsInParameters: MulticallParameter[] = [];
+    for (const userAddress of userAddresses) {
+      const assetInParam: MulticallParameter = {
+        targetAddress: this.config.comptrollerAddress,
+        targetFunction: 'getAssetsIn(address)',
+        inputData: [userAddress],
+        outputTypes: ['address[]']
+      };
+
+      assetsInParameters.push(assetInParam);
+    }
+
+    // assetIn results will store each assetIn value for each users in the valid order
+    const assetsInResults = await ExecuteMulticall(this.config.network, this.web3Provider, assetsInParameters);
+
+    const snapshotParameters: MulticallParameter[] = [];
+    for (let userIndex = 0; userIndex < assetsInResults.length; userIndex++) {
+      const selectedUser = userAddresses[userIndex];
+      const userAssetsIn = assetsInResults[userIndex][0]; // the assetsIn array is the first result
+      // console.log(`${selectedUser} is in markets ${userAssetsIn}`);
+
+      for (const market of userAssetsIn) {
+        const snapshotParam: MulticallParameter = {
+          targetAddress: market,
+          targetFunction: 'getAccountSnapshot(address)',
+          inputData: [selectedUser],
+          outputTypes: ['uint256', 'uint256', 'uint256']
+        };
+
+        snapshotParameters.push(snapshotParam);
+      }
+    }
+
+    const snapshotResults = await ExecuteMulticall(this.config.network, this.web3Provider, snapshotParameters);
+
+    let index = 0;
+    for (let userIndex = 0; userIndex < assetsInResults.length; userIndex++) {
+      const selectedUser = userAddresses[userIndex];
+      const userAssetsIn = assetsInResults[userIndex][0];
+      // console.log(`${selectedUser} is in markets ${userAssetsIn}`);
+
+      for (const market of userAssetsIn) {
+        const cTokenInfos = await GetTokenInfos(this.config.network, market.toString());
+        const marketTokenInfos = await GetTokenInfos(this.config.network, this.underlyings[market.toString()]);
+
+        // snapshot returns: (token balance, borrow balance, exchange rate mantissa)
+        const collateralBalanceInCToken = snapshotResults[index][0];
+        const normalizedCollateralBalanceInCToken = normalize(
+          BigInt(collateralBalanceInCToken.toString()),
+          cTokenInfos.decimals
+        );
+        const borrowBalance = snapshotResults[index][1];
+        const exchangeRateMantissa = snapshotResults[index][2];
+
+        const exchangeRateDecimals = 18 - 8 + marketTokenInfos.decimals;
+        const normalizedExchangeRate = normalize(BigInt(exchangeRateMantissa.toString()), exchangeRateDecimals);
+        let normalizedCollateralBalance = normalizedExchangeRate * normalizedCollateralBalanceInCToken;
+        let normalizedBorrowBalance = normalize(BigInt(borrowBalance.toString()), marketTokenInfos.decimals);
+
+        if (this.nonBorrowableMarkets.includes(market.toString())) {
+          normalizedBorrowBalance = 0;
+        }
+        if (this.rektMarkets.includes(market.toString())) {
+          normalizedCollateralBalance = 0;
+        }
+
+        // only save user if he has any value (collateral or borrow)
+        // this is done to save some RAM
+        if (normalizedCollateralBalance > 0 || normalizedBorrowBalance > 0) {
+          if (!this.users[selectedUser]) {
+            this.users[selectedUser] = {
+              collaterals: {},
+              debts: {}
+            };
+          }
+
+          // only save value if not 0 to save RAM
+          if (normalizedCollateralBalance > 0) {
+            this.users[selectedUser].collaterals[market] = normalizedCollateralBalance;
+          }
+          if (normalizedBorrowBalance > 0) {
+            this.users[selectedUser].debts[market] = normalizedBorrowBalance;
+          }
+        }
+
+        index++;
+      }
+    }
+  }
+}

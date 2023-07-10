@@ -115,7 +115,11 @@ export class CompoundParser extends ProtocolParser {
       console.log(`${logPrefix} heavy update completed, will fetch data for ${usersToUpdate.length} users`);
       this.lastHeavyUpdate = Date.now();
     } else {
-      console.log(`${logPrefix} starting light update because last heavy update is: ${this.lastHeavyUpdate}`);
+      const nextHeavyUpdateSeconds =
+        (this.heavyUpdateInterval * 3600 * 1000 - (this.lastHeavyUpdate - Date.now())) / 1000;
+      console.log(
+        `${logPrefix} starting light update because last heavy update is: ${this.lastHeavyUpdate}. Next heavy update: ${nextHeavyUpdateSeconds}`
+      );
       usersToUpdate = await this.processLightUpdate(targetBlockNumber);
       console.log(`${logPrefix} light update completed, will fetch data for ${usersToUpdate.length} users`);
     }
