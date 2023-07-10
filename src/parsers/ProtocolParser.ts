@@ -240,7 +240,7 @@ export abstract class ProtocolParser {
       for (const [debtTokenAddress, debtAmount] of Object.entries(data.debts)) {
         // get price for token
         const tokenPrice = this.prices[debtTokenAddress];
-        if (!tokenPrice) {
+        if (tokenPrice == undefined) {
           throw new Error(`Could not find token price for ${debtTokenAddress}`);
         }
 
@@ -252,7 +252,7 @@ export abstract class ProtocolParser {
       for (const [collateralTokenAddress, collateralAmount] of Object.entries(data.collaterals)) {
         // get price for token
         const tokenPrice = this.prices[collateralTokenAddress];
-        if (!tokenPrice) {
+        if (tokenPrice == undefined) {
           throw new Error(`Could not find token price for ${collateralTokenAddress}`);
         }
 

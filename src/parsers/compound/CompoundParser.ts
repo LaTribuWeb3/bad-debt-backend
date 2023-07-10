@@ -67,7 +67,7 @@ export class CompoundParser extends ProtocolParser {
         const underlyingInfos = await GetTokenInfos(this.config.network, underlying);
         console.log(`${logPrefix} underlying is ${underlyingInfos.symbol}`);
         prices[market] = await GetPrice(this.config.network, underlying, this.web3Provider);
-        if (prices[market] == 0) {
+        if (prices[market] == 0 && this.config.network.toUpperCase() == 'ETH') {
           console.log(`${logPrefix} using zapper to get price for underlying`);
           prices[market] = await getCTokenPriceFromZapper(market, underlying, this.web3Provider, this.config.network);
         }
@@ -109,14 +109,15 @@ export class CompoundParser extends ProtocolParser {
     // basically a heavy update re-read all users debts and collateral when a light update only checks
     // the recent movements and only fetch users data for those movements
     let usersToUpdate: string[] = [];
+    let isHeavyUpdate = false;
     if (this.lastHeavyUpdate < Date.now() - this.heavyUpdateInterval * 3600 * 1000) {
+      isHeavyUpdate = true;
       console.log(`${logPrefix} starting heavy update because last heavy update is: ${this.lastHeavyUpdate}`);
       usersToUpdate = await this.processHeavyUpdate(targetBlockNumber);
       console.log(`${logPrefix} heavy update completed, will fetch data for ${usersToUpdate.length} users`);
-      this.lastHeavyUpdate = Date.now();
     } else {
       const nextHeavyUpdateSeconds =
-        (this.heavyUpdateInterval * 3600 * 1000 - (this.lastHeavyUpdate - Date.now())) / 1000;
+        (this.heavyUpdateInterval * 3600 * 1000 - (Date.now() - this.lastHeavyUpdate)) / 1000;
       console.log(
         `${logPrefix} starting light update because last heavy update is: ${this.lastHeavyUpdate}. Next heavy update: ${nextHeavyUpdateSeconds}`
       );
@@ -125,6 +126,11 @@ export class CompoundParser extends ProtocolParser {
     }
 
     await this.updateUsers(usersToUpdate);
+
+    // Only update this.lastHeavyUpdate if everything went OK
+    if (isHeavyUpdate) {
+      this.lastHeavyUpdate = Date.now();
+    }
   }
 
   async updateUsers(usersToUpdate: string[]) {

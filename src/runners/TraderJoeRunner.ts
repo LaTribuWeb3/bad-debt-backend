@@ -10,7 +10,7 @@ async function TraderJoeRunner() {
     throw new Error(`Could not find rpc url in env variable for network ${config.network}`);
   }
 
-  const parser = new TraderJoeParser(config, rpcUrl, 'avalanche_trader-joe', 24, 1);
+  const parser = new TraderJoeParser(config, rpcUrl, 'avalanche_trader-joe.json', 24, 1);
   await parser.main();
 }
 
