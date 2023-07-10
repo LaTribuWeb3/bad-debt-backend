@@ -287,6 +287,8 @@ export abstract class ProtocolParser {
     console.log(`${this.runnerName}: borrows: ${this.borrows}`);
     console.log(`${this.runnerName}: bad debt: ${sumOfBadDebt}`);
 
+    // fs.writeFileSync(`users_${Math.round(Date.now() / 1000)}.json`, JSON.stringify(this.users));
+
     return {
       total: new BigNumber(sumOfBadDebt).times(CONSTANTS.BN_1E18).toFixed(0),
       updated: currTime.toString(),

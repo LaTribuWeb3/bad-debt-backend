@@ -139,6 +139,7 @@ export class CompoundParser extends ProtocolParser {
           (endIndex / usersToUpdate.length) * 100
         )}%`
       );
+
       promises.push(this.updateUsersWithMulticall(userAddresses));
       await sleep(100);
 
@@ -153,6 +154,10 @@ export class CompoundParser extends ProtocolParser {
     await Promise.all(promises);
   }
 
+  /**
+   * TODO EXPLAIN THIS FUNCTION BECAUSE ITS THE ONE THAT GET USERS DATA
+   * @param userAddresses
+   */
   async updateUsersWithMulticall(userAddresses: string[]) {
     const assetsInParameters: MulticallParameter[] = [];
     for (const userAddress of userAddresses) {
@@ -169,51 +174,25 @@ export class CompoundParser extends ProtocolParser {
     // assetIn results will store each assetIn value for each users in the valid order
     const assetsInResults = await ExecuteMulticall(this.config.network, this.web3Provider, assetsInParameters);
 
-    const borrowParameters: MulticallParameter[] = [];
-    const collateralParameters: MulticallParameter[] = [];
+    const snapshotParameters: MulticallParameter[] = [];
     for (let userIndex = 0; userIndex < assetsInResults.length; userIndex++) {
       const selectedUser = userAddresses[userIndex];
       const userAssetsIn = assetsInResults[userIndex][0]; // the assetsIn array is the first result
       // console.log(`${selectedUser} is in markets ${userAssetsIn}`);
 
       for (const market of userAssetsIn) {
-        const collateralParam: MulticallParameter = {
+        const snapshotParam: MulticallParameter = {
           targetAddress: market,
-          targetFunction: 'balanceOfUnderlying(address)',
+          targetFunction: 'getAccountSnapshot(address)',
           inputData: [selectedUser],
-          outputTypes: ['uint256']
+          outputTypes: ['uint256', 'uint256', 'uint256', 'uint256']
         };
 
-        if (this.rektMarkets.includes(market)) {
-          // encode something that will return 0
-          collateralParam.targetFunction = 'balanceOf(address)';
-        }
-
-        const borrowParam: MulticallParameter = {
-          targetAddress: market,
-          targetFunction: 'borrowBalanceCurrent(address)',
-          inputData: [selectedUser],
-          outputTypes: ['uint256']
-        };
-
-        if (this.nonBorrowableMarkets.includes(market)) {
-          // encode something that will return 0
-          borrowParam.targetFunction = 'balanceOf(address)';
-        }
-
-        borrowParameters.push(borrowParam);
-        collateralParameters.push(collateralParam);
+        snapshotParameters.push(snapshotParam);
       }
     }
 
-    // assetIn results will store each assetIn value for each users in the valid order
-    const collateralResultsPromise = ExecuteMulticall(this.config.network, this.web3Provider, collateralParameters);
-    const borrowResultsPromise = await ExecuteMulticall(this.config.network, this.web3Provider, borrowParameters);
-
-    await Promise.all([collateralResultsPromise, borrowResultsPromise]);
-
-    const collateralResults = await collateralResultsPromise;
-    const borrowResults = await borrowResultsPromise;
+    const snapshotResults = await ExecuteMulticall(this.config.network, this.web3Provider, snapshotParameters);
 
     let index = 0;
     for (let userIndex = 0; userIndex < assetsInResults.length; userIndex++) {
@@ -222,21 +201,33 @@ export class CompoundParser extends ProtocolParser {
       // console.log(`${selectedUser} is in markets ${userAssetsIn}`);
 
       for (const market of userAssetsIn) {
+        const cTokenInfos = await GetTokenInfos(this.config.network, market.toString());
         const marketTokenInfos = await GetTokenInfos(this.config.network, this.underlyings[market.toString()]);
-        const collateralResultForMarket = collateralResults[index][0]; // collateral value is the first result
-        const normalizedCollateralResultForMarket = normalize(
-          BigInt(collateralResultForMarket.toString()),
-          marketTokenInfos.decimals
+
+        // snapshot returns: (possible error, token balance, borrow balance, exchange rate mantissa)
+        const collateralBalanceInCToken = snapshotResults[index][1];
+        const normalizedCollateralBalanceInCToken = normalize(
+          BigInt(collateralBalanceInCToken.toString()),
+          cTokenInfos.decimals
         );
-        const borrowResultForMarket = borrowResults[index][0]; // borrow value is the first result
-        const normalizedBorrowResultForMarket = normalize(
-          BigInt(borrowResultForMarket.toString()),
-          marketTokenInfos.decimals
-        );
+        const borrowBalance = snapshotResults[index][2];
+        const exchangeRateMantissa = snapshotResults[index][3];
+
+        const exchangeRateDecimals = 18 - 8 + marketTokenInfos.decimals;
+        const normalizedExchangeRate = normalize(BigInt(exchangeRateMantissa.toString()), exchangeRateDecimals);
+        let normalizedCollateralBalance = normalizedExchangeRate * normalizedCollateralBalanceInCToken;
+        let normalizedBorrowBalance = normalize(BigInt(borrowBalance.toString()), marketTokenInfos.decimals);
+
+        if (this.nonBorrowableMarkets.includes(market.toString())) {
+          normalizedBorrowBalance = 0;
+        }
+        if (this.rektMarkets.includes(market.toString())) {
+          normalizedCollateralBalance = 0;
+        }
 
         // only save user if he has any value (collateral or borrow)
         // this is done to save some RAM
-        if (normalizedCollateralResultForMarket > 0 || normalizedBorrowResultForMarket > 0) {
+        if (normalizedCollateralBalance > 0 || normalizedBorrowBalance > 0) {
           if (!this.users[selectedUser]) {
             this.users[selectedUser] = {
               collaterals: {},
@@ -245,11 +236,11 @@ export class CompoundParser extends ProtocolParser {
           }
 
           // only save value if not 0 to save RAM
-          if (normalizedCollateralResultForMarket > 0) {
-            this.users[selectedUser].collaterals[market] = normalizedCollateralResultForMarket;
+          if (normalizedCollateralBalance > 0) {
+            this.users[selectedUser].collaterals[market] = normalizedCollateralBalance;
           }
-          if (normalizedBorrowResultForMarket > 0) {
-            this.users[selectedUser].debts[market] = normalizedBorrowResultForMarket;
+          if (normalizedBorrowBalance > 0) {
+            this.users[selectedUser].debts[market] = normalizedBorrowBalance;
           }
         }
 
