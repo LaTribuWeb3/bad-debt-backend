@@ -4,7 +4,9 @@ import { normalize } from '../../utils/Utils';
 import { CompoundParser } from './CompoundParser';
 
 /**
- * Aurigami parser is a compound fork without specificities
+ * Aurigami parser is a compound fork with one specificity:
+ * Contrary to normal CToken contracts, Aurigami CToken getAccountSnapshot function returns ['uint256', 'uint256', 'uint256']
+ * instead of ['uint256', 'uint256', 'uint256', 'uint256']. That's why the 'updateUsersWithMulticall' function has been overriden here
  */
 export class AurigamiParser extends CompoundParser {
   /**

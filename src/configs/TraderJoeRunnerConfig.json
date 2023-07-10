@@ -1,0 +1,10 @@
+{
+    "comptrollerAddress": "0xdc13687554205E5b89Ac783db14bb5bba4A1eDaC",
+    "cETHAddress": "0xdc13687554205E5b89Ac783db14bb5bba4A1eDaC",
+    "deployBlock": 5449252,
+    "multicallSize": 100,
+    "multicallParallelSize": 5,
+    "network": "AVAX",
+    "nonBorrowableMarkets": [],
+    "rektMarket": []
+}

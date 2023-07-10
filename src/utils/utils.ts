@@ -16,6 +16,8 @@ export function GetRpcUrlForNetwork(network: string) {
       return process.env.RPC_URL_NEAR;
     case 'OPTIMISM':
       return process.env.RPC_URL_OPTIMISM;
+    case 'AVAX':
+      return process.env.RPC_URL_AVAX;
   }
 }
 

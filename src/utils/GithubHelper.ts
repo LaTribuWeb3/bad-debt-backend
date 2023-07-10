@@ -11,7 +11,7 @@ if (!appEnv) {
 const githubToken = process.env.GH_TOKEN;
 
 let uploadFilesToGithub = false;
-if (process.env.UPLOAD_FILES) {
+if (process.env.UPLOAD_FILES && process.env.UPLOAD_FILES == 'true') {
   uploadFilesToGithub = true;
 }
 
