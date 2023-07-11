@@ -31,7 +31,7 @@ export async function retry<T extends (...arg0: any[]) => any>(
   fn: T,
   args: Parameters<T>,
   maxTry = 10,
-  incrSleepDelay = 1000,
+  incrSleepDelay = 10000,
   retryCount = 1
 ): Promise<Awaited<ReturnType<T>>> {
   const currRetry = typeof retryCount === 'number' ? retryCount : 1;

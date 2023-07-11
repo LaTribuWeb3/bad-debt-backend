@@ -139,7 +139,7 @@ export async function GetEthPrice(network: string): Promise<number> {
 async function GetSimplePrice(currency: string): Promise<number> {
   const fullUrl = `${web3ApiUrl}/api/price/simple?currency=${currency}`;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const axiosResp: any = await retry(axios.get, [fullUrl], 50, 5000);
+  const axiosResp: any = await retry(axios.get, [fullUrl], 50);
   return Number(axiosResp.data.priceUSD);
 }
 
