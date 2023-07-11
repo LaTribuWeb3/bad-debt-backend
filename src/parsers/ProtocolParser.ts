@@ -85,6 +85,7 @@ export abstract class ProtocolParser {
         }
       } catch (err) {
         console.error(`${this.runnerName}: An exception occurred: ${err}`);
+        console.error(err);
         if (!onlyOnce) {
           await this.SendMonitoringData(
             MonitoringStatusEnum.ERROR,

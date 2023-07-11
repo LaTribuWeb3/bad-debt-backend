@@ -5,7 +5,7 @@ import { ExecuteMulticall, MulticallParameter } from '../../utils/MulticallHelpe
 import { GetEthPrice, GetPrice, getCTokenPriceFromZapper } from '../../utils/PriceHelper';
 import { GetTokenInfos } from '../../utils/TokenHelper';
 import { LoadUserListFromDisk, SaveUserListToDisk } from '../../utils/UserHelper';
-import { normalize, roundTo, sleep } from '../../utils/Utils';
+import { normalize, retry, roundTo, sleep } from '../../utils/Utils';
 import { ProtocolParser } from '../ProtocolParser';
 import { CompoundConfig } from './CompoundConfig';
 
@@ -38,31 +38,31 @@ export class CompoundParser extends ProtocolParser {
   override async initPrices(): Promise<void> {
     let logPrefix = `${this.runnerName} | initPrices |`;
     console.log(`${logPrefix} getting compound markets`);
-    this.markets = await this.comptroller.getAllMarkets();
+    this.markets = await retry(this.comptroller.getAllMarkets, []);
     console.log(`${logPrefix} found ${this.markets.length} markets`);
 
     this.tvl = 0;
     this.borrows = 0;
     const prices: { [tokenAddress: string]: number } = {};
     for (const market of this.markets) {
+      const ctokenContract = CToken__factory.connect(market, this.web3Provider);
       let marketBalanceNormalized = 0;
       let marketBorrowsNormalized = 0;
       const marketInfos = await GetTokenInfos(this.config.network, market);
       logPrefix = `${this.runnerName} | initPrices | ${marketInfos.symbol} |`;
       console.log(`${logPrefix} working on ${marketInfos.symbol}`);
+
       if (market == this.config.cETHAddress) {
-        console.log(`${logPrefix} market is cETH, getting eth price`);
+        console.log(`${logPrefix} market is cETH, getting chain token price`);
         prices[market] = await GetEthPrice(this.config.network);
         // for cETH, consider underlying to be ETH
         this.underlyings[market] = CONSTANTS.ETH_ADDRESS;
-        console.log(`${logPrefix} eth price = $${prices[market]}`);
-        marketBalanceNormalized = normalize(await this.web3Provider.getBalance(market), 18);
-        const ctokenContract = CToken__factory.connect(market, this.web3Provider);
-        marketBorrowsNormalized = normalize(await ctokenContract.totalBorrows(), 18);
+        console.log(`${logPrefix} chain token price = $${prices[market]}`);
+        marketBalanceNormalized = normalize(await retry(() => this.web3Provider.getBalance(market), []), 18);
+        marketBorrowsNormalized = normalize(await retry(ctokenContract.totalBorrows, []), 18);
       } else {
         console.log(`${logPrefix} getting underlying`);
-        const ctokenContract = CToken__factory.connect(market, this.web3Provider);
-        const underlying = await ctokenContract.underlying();
+        const underlying = await retry(ctokenContract.underlying, []);
         this.underlyings[market] = underlying;
         const underlyingInfos = await GetTokenInfos(this.config.network, underlying);
         console.log(`${logPrefix} underlying is ${underlyingInfos.symbol}`);
@@ -73,12 +73,15 @@ export class CompoundParser extends ProtocolParser {
         }
         console.log(`${logPrefix} price is ${prices[market]}`);
         const underlyingErc20Contract = ERC20__factory.connect(underlying, this.web3Provider);
-        marketBalanceNormalized = normalize(await underlyingErc20Contract.balanceOf(market), underlyingInfos.decimals);
+        marketBalanceNormalized = normalize(
+          await retry(underlyingErc20Contract.balanceOf, [market]),
+          underlyingInfos.decimals
+        );
 
         if (this.nonBorrowableMarkets.includes(market)) {
           marketBorrowsNormalized = 0;
         } else {
-          marketBorrowsNormalized = normalize(await ctokenContract.totalBorrows(), underlyingInfos.decimals);
+          marketBorrowsNormalized = normalize(await retry(ctokenContract.totalBorrows, []), underlyingInfos.decimals);
         }
       }
 
@@ -182,7 +185,7 @@ export class CompoundParser extends ProtocolParser {
     }
 
     // assetIn results will store each assetIn value for each users in the valid order
-    const assetsInResults = await ExecuteMulticall(this.config.network, this.web3Provider, assetsInParameters);
+    const assetsInResults = await retry(ExecuteMulticall, [this.config.network, this.web3Provider, assetsInParameters]);
 
     const snapshotParameters: MulticallParameter[] = [];
     for (let userIndex = 0; userIndex < assetsInResults.length; userIndex++) {
@@ -202,7 +205,7 @@ export class CompoundParser extends ProtocolParser {
       }
     }
 
-    const snapshotResults = await ExecuteMulticall(this.config.network, this.web3Provider, snapshotParameters);
+    const snapshotResults = await retry(ExecuteMulticall, [this.config.network, this.web3Provider, snapshotParameters]);
 
     let index = 0;
     for (let userIndex = 0; userIndex < assetsInResults.length; userIndex++) {
