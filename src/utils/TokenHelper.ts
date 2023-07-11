@@ -106,6 +106,13 @@ export function GetChainToken(network: string): TokenInfos {
         name: 'Avax',
         symbol: 'AVAX'
       };
+    case 'MOONBEAM':
+      return {
+        address: '0x',
+        decimals: 18,
+        name: 'Moonbeam',
+        symbol: 'GLMR'
+      };
     default:
       throw new Error(`Cannot find chain token for ${network}`);
   }

@@ -18,6 +18,8 @@ export function GetRpcUrlForNetwork(network: string) {
       return process.env.RPC_URL_OPTIMISM;
     case 'AVAX':
       return process.env.RPC_URL_AVAX;
+    case 'MOONBEAM':
+      return process.env.RPC_URL_MOONBEAM;
   }
 }
 
@@ -41,7 +43,7 @@ export async function retry<T extends (...arg0: any[]) => any>(
       console.log(`Retry ${currRetry} failed. All ${maxTry} retry attempts exhausted`);
       throw e;
     }
-    console.log(`Retry ${currRetry} failed.`);
+    console.log(`Retry ${currRetry} failed: ${e}`);
     // console.log(e);
     console.log(`Waiting ${retryCount} second(s)`);
     await sleep(incrSleepDelay * retryCount);

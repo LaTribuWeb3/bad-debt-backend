@@ -1,6 +1,6 @@
 import { ExecuteMulticall, MulticallParameter } from '../../utils/MulticallHelper';
-import { GetTokenInfos } from '../../utils/TokenHelper';
-import { normalize } from '../../utils/Utils';
+import { GetChainToken, GetTokenInfos, TokenInfos } from '../../utils/TokenHelper';
+import { normalize, retry } from '../../utils/Utils';
 import { CompoundParser } from './CompoundParser';
 
 /**
@@ -28,7 +28,7 @@ export class AurigamiParser extends CompoundParser {
     }
 
     // assetIn results will store each assetIn value for each users in the valid order
-    const assetsInResults = await ExecuteMulticall(this.config.network, this.web3Provider, assetsInParameters);
+    const assetsInResults = await retry(ExecuteMulticall, [this.config.network, this.web3Provider, assetsInParameters]);
 
     const snapshotParameters: MulticallParameter[] = [];
     for (let userIndex = 0; userIndex < assetsInResults.length; userIndex++) {
@@ -48,7 +48,7 @@ export class AurigamiParser extends CompoundParser {
       }
     }
 
-    const snapshotResults = await ExecuteMulticall(this.config.network, this.web3Provider, snapshotParameters);
+    const snapshotResults = await retry(ExecuteMulticall, [this.config.network, this.web3Provider, snapshotParameters]);
 
     let index = 0;
     for (let userIndex = 0; userIndex < assetsInResults.length; userIndex++) {
@@ -58,8 +58,12 @@ export class AurigamiParser extends CompoundParser {
 
       for (const market of userAssetsIn) {
         const cTokenInfos = await GetTokenInfos(this.config.network, market.toString());
-        const marketTokenInfos = await GetTokenInfos(this.config.network, this.underlyings[market.toString()]);
-
+        let marketTokenInfos: TokenInfos | undefined = undefined;
+        if (this.config.cETHAddress == market) {
+          marketTokenInfos = GetChainToken(this.config.network);
+        } else {
+          marketTokenInfos = await GetTokenInfos(this.config.network, this.underlyings[market.toString()]);
+        }
         // snapshot returns: (token balance, borrow balance, exchange rate mantissa)
         const collateralBalanceInCToken = snapshotResults[index][0];
         const normalizedCollateralBalanceInCToken = normalize(
