@@ -10,7 +10,7 @@ interface TokenInfoCache {
   [tokenAddress: string]: TokenInfos;
 }
 
-interface TokenInfos {
+export interface TokenInfos {
   address: string;
   symbol: string;
   decimals: number;
@@ -46,4 +46,67 @@ export async function GetTokenInfos(network: string, address: string): Promise<T
 
   // console.log(`GetTokenInfos[${network}]: infos for ${address}:`, tokenInfosCache[network][address]);
   return tokenInfosCache[network][address];
+}
+
+export function GetChainToken(network: string): TokenInfos {
+  switch (network.toUpperCase()) {
+    case 'ETH':
+      return {
+        address: '0x',
+        decimals: 18,
+        name: 'Ether',
+        symbol: 'ETH'
+      };
+    case 'BSC':
+      return {
+        address: '0x',
+        decimals: 18,
+        name: 'BNB',
+        symbol: 'BNB'
+      };
+    case 'CRONOS':
+      return {
+        address: '0x',
+        decimals: 18,
+        name: 'CRO',
+        symbol: 'CRO'
+      };
+    case 'MATIC':
+      return {
+        address: '0x',
+        decimals: 18,
+        name: 'MATIC',
+        symbol: 'MATIC'
+      };
+    case 'GNOSIS':
+      return {
+        address: '0x',
+        decimals: 18,
+        name: 'xDAI',
+        symbol: 'xDAI'
+      };
+    case 'NEAR':
+      return {
+        address: '0x',
+        decimals: 18,
+        name: 'Near',
+        symbol: 'NEAR'
+      };
+    case 'OPTIMISM':
+      return {
+        address: '0x',
+        decimals: 18,
+        name: 'Ether',
+        symbol: 'ETH'
+      };
+    case 'AVAX':
+      return {
+        address: '0x',
+        decimals: 18,
+        name: 'Avax',
+        symbol: 'AVAX'
+      };
+    default:
+      throw new Error(`Cannot find chain token for ${network}`);
+  }
 }

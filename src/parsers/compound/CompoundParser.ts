@@ -3,7 +3,7 @@ import { CONSTANTS } from '../../utils/Constants';
 import { FetchAllEventsAndExtractStringArray } from '../../utils/EventHelper';
 import { ExecuteMulticall, MulticallParameter } from '../../utils/MulticallHelper';
 import { GetEthPrice, GetPrice, getCTokenPriceFromZapper } from '../../utils/PriceHelper';
-import { GetTokenInfos } from '../../utils/TokenHelper';
+import { GetChainToken, GetTokenInfos, TokenInfos } from '../../utils/TokenHelper';
 import { LoadUserListFromDisk, SaveUserListToDisk } from '../../utils/UserHelper';
 import { normalize, retry, roundTo, sleep } from '../../utils/Utils';
 import { ProtocolParser } from '../ProtocolParser';
@@ -53,13 +53,17 @@ export class CompoundParser extends ProtocolParser {
       console.log(`${logPrefix} working on ${marketInfos.symbol}`);
 
       if (market == this.config.cETHAddress) {
-        console.log(`${logPrefix} market is cETH, getting chain token price`);
+        const chainToken = GetChainToken(this.config.network);
+        console.log(`${logPrefix} market is cETH: ${chainToken.symbol}, getting chain token price`);
         prices[market] = await GetEthPrice(this.config.network);
         // for cETH, consider underlying to be ETH
-        this.underlyings[market] = CONSTANTS.ETH_ADDRESS;
-        console.log(`${logPrefix} chain token price = $${prices[market]}`);
-        marketBalanceNormalized = normalize(await retry(() => this.web3Provider.getBalance(market), []), 18);
-        marketBorrowsNormalized = normalize(await retry(ctokenContract.totalBorrows, []), 18);
+        this.underlyings[market] = chainToken.address;
+        console.log(`${logPrefix} ${chainToken.symbol} price = $${prices[market]}`);
+        marketBalanceNormalized = normalize(
+          await retry(() => this.web3Provider.getBalance(market), []),
+          chainToken.decimals
+        );
+        marketBorrowsNormalized = normalize(await retry(ctokenContract.totalBorrows, []), chainToken.decimals);
       } else {
         console.log(`${logPrefix} getting underlying`);
         const underlying = await retry(ctokenContract.underlying, []);
@@ -215,7 +219,12 @@ export class CompoundParser extends ProtocolParser {
 
       for (const market of userAssetsIn) {
         const cTokenInfos = await GetTokenInfos(this.config.network, market.toString());
-        const marketTokenInfos = await GetTokenInfos(this.config.network, this.underlyings[market.toString()]);
+        let marketTokenInfos: TokenInfos | undefined = undefined;
+        if (this.config.cETHAddress == market) {
+          marketTokenInfos = GetChainToken(this.config.network);
+        } else {
+          marketTokenInfos = await GetTokenInfos(this.config.network, this.underlyings[market.toString()]);
+        }
 
         // snapshot returns: (possible error, token balance, borrow balance, exchange rate mantissa)
         const collateralBalanceInCToken = snapshotResults[index][1];

@@ -45,7 +45,7 @@ export async function retry<T extends (...arg0: any[]) => any>(
     // console.log(e);
     console.log(`Waiting ${retryCount} second(s)`);
     await sleep(incrSleepDelay * retryCount);
-    return retry(fn, args, maxTry, currRetry + 1);
+    return retry(fn, args, maxTry, incrSleepDelay, currRetry + 1);
   }
 }
 
