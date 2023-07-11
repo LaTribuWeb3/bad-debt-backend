@@ -25,4 +25,9 @@ echo "started bdts-aurora-bastion. Waiting before starting next"
 sleep 180
 pm2 restart bad-debt-backend.pm2.config.js --only bdts-matic-0vix -s
 echo "started bdts-matic-0vix. Waiting before starting next"
+sleep 180
+pm2 restart bad-debt-backend.pm2.config.js --only bdts-bsc-apeswap -s
+echo "started bdts-bsc-apeswap. Waiting before starting next"
+
+
 pm2 reset all
