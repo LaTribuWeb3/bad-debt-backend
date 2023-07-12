@@ -59,7 +59,7 @@ export class AurigamiParser extends CompoundParser {
       for (const market of userAssetsIn) {
         const cTokenInfos = await GetTokenInfos(this.config.network, market.toString());
         let marketTokenInfos: TokenInfos | undefined = undefined;
-        if (this.config.cETHAddress == market) {
+        if (this.config.cETHAddresses.some((_) => _.toLowerCase() == market.toLowerCase())) {
           marketTokenInfos = GetChainToken(this.config.network);
         } else {
           marketTokenInfos = await GetTokenInfos(this.config.network, this.underlyings[market.toString()]);
@@ -78,10 +78,10 @@ export class AurigamiParser extends CompoundParser {
         let normalizedCollateralBalance = normalizedExchangeRate * normalizedCollateralBalanceInCToken;
         let normalizedBorrowBalance = normalize(BigInt(borrowBalance.toString()), marketTokenInfos.decimals);
 
-        if (this.nonBorrowableMarkets.includes(market.toString())) {
+        if (this.nonBorrowableMarkets.some((_) => _.toLowerCase() == market.toString().toLowerCase())) {
           normalizedBorrowBalance = 0;
         }
-        if (this.rektMarkets.includes(market.toString())) {
+        if (this.rektMarkets.some((_) => _.toLowerCase() == market.toString().toLowerCase())) {
           normalizedCollateralBalance = 0;
         }
 

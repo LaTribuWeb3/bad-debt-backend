@@ -1,6 +1,6 @@
 {
     "comptrollerAddress": "0x4f3e801Bd57dC3D641E72f2774280b21d31F64e4",
-    "cETHAddress": "0x157822aC5fa0Efe98daa4b0A55450f4a182C10cA",
+    "cETHAddresses": ["0x157822aC5fa0Efe98daa4b0A55450f4a182C10cA"],
     "deployBlock": 15341030,
     "blockStepLimit": 50000,
     "multicallSize": 100,

@@ -18,7 +18,7 @@ export class MoonwellParser extends CompoundParser {
     ];
 
     // negligable value
-    if (rektMarkets.includes(address.toLowerCase())) {
+    if (rektMarkets.some((_) => _.toLowerCase() == address.toLowerCase())) {
       return 1 / 1e18;
     } else {
       if (!this.oracleAddress) {
@@ -28,7 +28,7 @@ export class MoonwellParser extends CompoundParser {
       const oracleContract = CompoundOracle__factory.connect(this.oracleAddress, this.web3Provider);
 
       let underlyingTokenInfos: TokenInfos | undefined = undefined;
-      if (address == this.config.cETHAddress) {
+      if (this.config.cETHAddresses.some((_) => _.toLowerCase() == address.toLowerCase())) {
         underlyingTokenInfos = GetChainToken(this.config.network);
       } else {
         underlyingTokenInfos = await GetTokenInfos(this.config.network, this.underlyings[address]);
