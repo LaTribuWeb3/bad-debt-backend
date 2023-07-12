@@ -1,6 +1,5 @@
 import * as dotenv from 'dotenv';
 import { GetRpcUrlForNetwork } from '../utils/Utils';
-import { CompoundParser } from '../parsers/compound/CompoundParser';
 import { InverseParser } from '../parsers/compound/InverseParser';
 import config from '../configs/InverseRunnerConfig.json';
 dotenv.config();

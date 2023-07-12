@@ -1,10 +1,14 @@
 import BigNumber from 'bignumber.js';
 import { ProtocolParser } from '../src/parsers/ProtocolParser';
-import { CONSTANT_1e18 } from '../src/utils/Utils';
+import { CONSTANTS } from '../src/utils/Constants';
 import { ParserResult, UserData } from '../src/utils/Types';
 import { MonitoringStatusEnum } from '../src/utils/MonitoringHelper';
 
 class TestParser extends ProtocolParser {
+  getFallbackPrice(address: string): Promise<number> {
+    return Promise.resolve(0);
+  }
+
   injectedPrices: { [tokenAddress: string]: number } | undefined;
   injectedUsers: { [key: string]: UserData } | undefined;
 
@@ -118,7 +122,7 @@ function getUsersWithBadDebt() {
 
 describe('testing Protocol Parser calc bad debt function', () => {
   test('Test Parser without Bad debt', async () => {
-    const parser = new TestParser('http://fakeRpcUrl', 'blockchain_test', 24, 1);
+    const parser = new TestParser('runnerName', 'http://fakeRpcUrl', 'blockchain_test', 24, 1);
 
     parser.injectedPrices = getInjectedPrices();
 
@@ -135,7 +139,7 @@ describe('testing Protocol Parser calc bad debt function', () => {
   });
 
   test('Test Parser with Bad debt', async () => {
-    const parser = new TestParser('http://fakeRpcUrl', 'blockchain_test', 24, 1);
+    const parser = new TestParser('runnerName', 'http://fakeRpcUrl', 'blockchain_test', 24, 1);
 
     parser.injectedPrices = getInjectedPrices();
 
@@ -152,12 +156,12 @@ describe('testing Protocol Parser calc bad debt function', () => {
 
     // borrows are 10 tokenA and 10 tokenC
     const totalBorrow = 10 * tokenAPrice + 10 * tokenCPrice;
-    const totalBorrow18Decimals = new BigNumber(totalBorrow).times(CONSTANT_1e18).toFixed();
+    const totalBorrow18Decimals = new BigNumber(totalBorrow).times(CONSTANTS.BN_1E18).toFixed();
     expect(parserResult.borrows).toBe(totalBorrow18Decimals);
 
     // collateral are 10 tokenB and 100 token C
     const totalCollateral = 10 * tokenBPrice + 100 * tokenCPrice;
-    const totalCollateral18Decimals = new BigNumber(totalCollateral).times(CONSTANT_1e18).toFixed();
+    const totalCollateral18Decimals = new BigNumber(totalCollateral).times(CONSTANTS.BN_1E18).toFixed();
     expect(parserResult.deposits).toBe(totalCollateral18Decimals);
 
     // user u2 should be in the users with bad debt
@@ -166,7 +170,7 @@ describe('testing Protocol Parser calc bad debt function', () => {
 
     // user u2 has 10 tokenB as collateral and 10 tokenC as debt
     const u2BadDebt = 10 * tokenBPrice - 10 * tokenCPrice;
-    const u2BadDebt18Decimals = new BigNumber(u2BadDebt).times(CONSTANT_1e18).toFixed();
+    const u2BadDebt18Decimals = new BigNumber(u2BadDebt).times(CONSTANTS.BN_1E18).toFixed();
     expect(parserResult.total).toBe(u2BadDebt18Decimals);
   });
 });

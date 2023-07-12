@@ -54,13 +54,6 @@ export abstract class ProtocolParser {
     // eslint-disable-next-line no-constant-condition
     while (true) {
       try {
-        const network = await this.web3Provider._detectNetwork();
-        console.log(`connected to ${network.name} network`);
-      } catch (err) {
-        console.log(err);
-      }
-
-      try {
         const start = Date.now();
         if (!onlyOnce) {
           await this.SendMonitoringData(MonitoringStatusEnum.RUNNING, Math.round(start / 1000));
@@ -242,50 +235,31 @@ export abstract class ProtocolParser {
     const usersWithBadDebt: { user: string; badDebt: string }[] = [];
 
     for (const [user, data] of Object.entries(this.users)) {
-      // sum user debts in $
-      let userDebt = 0;
-      for (const [debtTokenAddress, debtAmount] of Object.entries(data.debts)) {
-        // get price for token
-        const tokenPrice = this.prices[debtTokenAddress];
-        if (tokenPrice == undefined) {
-          throw new Error(`Could not find token price for ${debtTokenAddress}`);
-        }
-
-        userDebt += tokenPrice * debtAmount;
-      }
-
-      // sum user collateral in $
-      let userCollateral = 0;
-      for (const [collateralTokenAddress, collateralAmount] of Object.entries(data.collaterals)) {
-        // get price for token
-        const tokenPrice = this.prices[collateralTokenAddress];
-        if (tokenPrice == undefined) {
-          throw new Error(`Could not find token price for ${collateralTokenAddress}`);
-        }
-
-        userCollateral += tokenPrice * collateralAmount;
-      }
+      const userValue = ComputeUserValue(data, this.prices);
 
       // add optional aditional user collateral in $
       const additionalCollateral = await this.additionalCollateralBalance(user);
       if (additionalCollateral > 0) {
         console.log(`${this.runnerName}: adding additional collateral for user ${user}: ${additionalCollateral}`);
-        userCollateral += additionalCollateral;
+        userValue.netValueUsd = userValue.netValueUsd + additionalCollateral;
+        userValue.collateralUsd = userValue.collateralUsd + additionalCollateral;
       }
 
-      const userNetValue = userCollateral - userDebt;
-      totalBorrow += userDebt;
-      totalCollateral += userCollateral;
-      tvl += userNetValue;
+      totalBorrow += userValue.debtUsd;
+      totalCollateral += userValue.collateralUsd;
+      tvl += userValue.netValueUsd;
 
-      if (userNetValue < 0) {
+      if (userValue.netValueUsd < 0) {
         //const result = await this.comptroller.methods.getAccountLiquidity(user).call()
         // console.log(`${this.runnerName}: bad debt for user ${user}: ${userNetValue}`);
-        sumOfBadDebt += userNetValue;
+        sumOfBadDebt += userValue.netValueUsd;
 
         // console.log(`${this.runnerName}: total bad debt: ${sumOfBadDebt}`);
 
-        usersWithBadDebt.push({ user: user, badDebt: new BigNumber(userNetValue).times(CONSTANTS.BN_1E18).toFixed() });
+        usersWithBadDebt.push({
+          user: user,
+          badDebt: new BigNumber(userValue.netValueUsd).times(CONSTANTS.BN_1E18).toFixed()
+        });
       }
     }
 
@@ -316,6 +290,51 @@ export abstract class ProtocolParser {
   }
 }
 
+/**
+ * Util function to compute sum of debt, collateral in USD and then net value (collateral USD - debt USD)
+ * @param userData
+ * @param prices
+ * @returns
+ */
+export function ComputeUserValue(userData: UserData, prices: { [tokenAddress: string]: number }): UserValue {
+  // sum user debts in $
+  let userDebt = 0;
+  for (const [debtTokenAddress, debtAmount] of Object.entries(userData.debts)) {
+    // get price for token
+    const tokenPrice = prices[debtTokenAddress];
+    if (tokenPrice == undefined) {
+      throw new Error(`Could not find token price for ${debtTokenAddress}`);
+    }
+
+    userDebt += tokenPrice * debtAmount;
+  }
+
+  // sum user collateral in $
+  let userCollateral = 0;
+  for (const [collateralTokenAddress, collateralAmount] of Object.entries(userData.collaterals)) {
+    // get price for token
+    const tokenPrice = prices[collateralTokenAddress];
+    if (tokenPrice == undefined) {
+      throw new Error(`Could not find token price for ${collateralTokenAddress}`);
+    }
+
+    userCollateral += tokenPrice * collateralAmount;
+  }
+
+  const userNetValue = userCollateral - userDebt;
+
+  return {
+    collateralUsd: userCollateral,
+    debtUsd: userDebt,
+    netValueUsd: userNetValue
+  };
+}
+
+export interface UserValue {
+  debtUsd: number;
+  collateralUsd: number;
+  netValueUsd: number;
+}
 export interface UserListDataStore {
   lastBlockFetched: number;
   userList: string[];

@@ -199,6 +199,11 @@ export class CompoundParser extends ProtocolParser {
       // console.log(`${selectedUser} is in markets ${userAssetsIn}`);
 
       for (const market of userAssetsIn) {
+        // ignore market not in protocol market list
+        if (!this.markets.some((_) => _.toLowerCase() == market.toString().toLowerCase())) {
+          console.log(`ignoring market ${market} from userAssetsIn because not in this.markets`);
+          continue;
+        }
         const snapshotParam: MulticallParameter = {
           targetAddress: market,
           targetFunction: 'getAccountSnapshot(address)',
@@ -219,6 +224,10 @@ export class CompoundParser extends ProtocolParser {
       // console.log(`${selectedUser} is in markets ${userAssetsIn}`);
 
       for (const market of userAssetsIn) {
+        if (!this.markets.some((_) => _.toLowerCase() == market.toString().toLowerCase())) {
+          console.log(`ignoring market ${market} from userAssetsIn because not in this.markets`);
+          continue;
+        }
         const cTokenInfos = await GetTokenInfos(this.config.network, market.toString());
         let marketTokenInfos: TokenInfos | undefined = undefined;
         if (this.config.cETHAddresses.some((_) => _.toLowerCase() == market.toString().toLowerCase())) {

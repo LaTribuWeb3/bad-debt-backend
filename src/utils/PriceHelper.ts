@@ -46,7 +46,7 @@ export async function getCTokenPriceFromZapper(
   return normalizedUSDValue;
 }
 
-async function fetchZapperTotal(address: string): Promise<number> {
+export async function fetchZapperTotal(address: string): Promise<number> {
   const zapperKey = process.env.ZAPPER_KEY;
   if (!zapperKey) {
     throw new Error('Cannot find ZAPPER_KEY in env variables');
