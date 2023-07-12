@@ -12,7 +12,7 @@ async function InverseRunner() {
   }
 
   const runnerName = 'InverseParser-Runner';
-  const parser = new InverseParser(config, runnerName, rpcUrl, 'ethereum_inverse.json', 24 * 5, 12);
+  const parser = new InverseParser(config, runnerName, rpcUrl, 'ethereum_inverse.json', 24 * 5, 24);
   await parser.main();
 }
 
