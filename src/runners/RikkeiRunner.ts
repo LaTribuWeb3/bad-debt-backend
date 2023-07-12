@@ -11,7 +11,7 @@ async function RikkeiRunner() {
   }
 
   const runnerName = 'RikkeiParser-Runner';
-  const parser = new CompoundParser(config, runnerName, rpcUrl, 'bsc_rikki.json', 24, 1);
+  const parser = new CompoundParser(config, runnerName, rpcUrl, 'BSC_rikki.json', 24, 1);
   await parser.main();
 }
 
