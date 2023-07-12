@@ -1,7 +1,7 @@
 import * as dotenv from 'dotenv';
-import { _0vixParser } from '../parsers/compound/0vixParser';
 import config from '../configs/0vixRunnerConfig.json';
 import { GetRpcUrlForNetwork } from '../utils/Utils';
+import { CompoundParser } from '../parsers/compound/CompoundParser';
 dotenv.config();
 
 async function _0vixRunner() {
@@ -10,7 +10,8 @@ async function _0vixRunner() {
     throw new Error(`Could not find rpc url in env variable for network ${config.network}`);
   }
 
-  const parser = new _0vixParser(config, rpcUrl, 'polygon_0vix.json', 24, 1);
+  const runnerName = '_0vixParser-Runner';
+  const parser = new CompoundParser(config, runnerName, rpcUrl, 'polygon_0vix.json', 24, 1);
   await parser.main();
 }
 

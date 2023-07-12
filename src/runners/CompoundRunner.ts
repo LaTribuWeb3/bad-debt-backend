@@ -9,7 +9,9 @@ async function CompoundRunner() {
   if (!rpcUrl) {
     throw new Error(`Could not find rpc url in env variable for network ${config.network}`);
   }
-  const parser = new CompoundParser(config, rpcUrl, 'ethereum_compound.json', 24, 1);
+
+  const runnerName = 'CompoundParser-Runner';
+  const parser = new CompoundParser(config, runnerName, rpcUrl, 'ethereum_compound.json', 24, 1);
   await parser.main();
 }
 

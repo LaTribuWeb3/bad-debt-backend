@@ -21,6 +21,7 @@ Needed only if network = ETHEREUM
 The url of the instance of the Web3 API you're running.
 If you run it locally: http://localhost:8080
 
+Learn more about La Tribu's web3 api: [on github](https://github.com/LaTribuWeb3/web3-api)
 ### RPC_URL_{{NETWORK}}
 
 Examples:
@@ -32,6 +33,7 @@ Examples:
 - RPC_URL_GNOSIS
 - RPC_URL_NEAR
 - RPC_URL_OPTIMISM
+- RPC_URL_MOONBEAM
 
 
 
@@ -46,8 +48,17 @@ Adding a new parser for a protocol that is a fork of compound is quite simple.
 Let's say the new protocol you're adding is named "Proto"
 
 - Create a new config file here: `src/configs/ProtoConfig.json`. This file should contains all required infos.
-- Create a new parser here: `src/parsers/compound/ProtoParser.ts`. If not specificities, just a class that inherit the CompoundParser class is enough
-- Create a new runner here: `src/runners/ProtoRunner.ts` which will import the config file, initialize an instance of the ProtoParser class and start the main() function
+- Create a new runner here: `src/runners/ProtoRunner.ts`, then two cases: 
+    - if the new protocol does not have any specificities w.r.t Compound: just create an instance of the CompoundParser class
+    - if there are any specificities, create a new Parser here: `src/parsers/compound/ProtoParser.ts` and overrite the functions that need to be in order to add the specificities
 
-Examples of Compound forks: Sonne Finance, Rari-Capital, Aurigami
+
+
+Examples of Compound forks without specificities: 
+- Sonne Finance, 
+- Rari-Capital
+
+Examples of Compound forks with specificities: 
+- Aurigami
+- Moonwell
 

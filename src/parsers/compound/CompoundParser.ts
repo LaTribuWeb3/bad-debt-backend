@@ -20,12 +20,13 @@ export class CompoundParser extends ProtocolParser {
 
   constructor(
     config: CompoundConfig,
+    runnerName: string,
     rpcURL: string,
     outputJsonFileName: string,
     heavyUpdateInterval?: number,
     fetchDelayInHours?: number
   ) {
-    super(rpcURL, outputJsonFileName, heavyUpdateInterval, fetchDelayInHours);
+    super(runnerName, rpcURL, outputJsonFileName, heavyUpdateInterval, fetchDelayInHours);
     this.config = config;
     this.markets = [];
     this.comptroller = Comptroller__factory.connect(config.comptrollerAddress, this.web3Provider);

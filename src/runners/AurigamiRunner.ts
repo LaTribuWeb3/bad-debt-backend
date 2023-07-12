@@ -9,7 +9,9 @@ async function AurigamiRunner() {
   if (!rpcUrl) {
     throw new Error(`Could not find rpc url in env variable for network ${config.network}`);
   }
-  const parser = new AurigamiParser(config, rpcUrl, 'aurora_aurigami.json', 24, 1);
+
+  const runnerName = 'AurigamiParser-Runner';
+  const parser = new AurigamiParser(config, runnerName, rpcUrl, 'aurora_aurigami.json', 24, 1);
   await parser.main();
 }
 

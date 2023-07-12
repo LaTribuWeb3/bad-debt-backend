@@ -26,8 +26,14 @@ export abstract class ProtocolParser {
   tvl = 0;
   borrows = 0;
 
-  constructor(rpcURL: string, outputJsonFileName: string, heavyUpdateInterval = 24, fetchDelayInHours = 1) {
-    this.runnerName = `${this.constructor.name}-Runner`;
+  constructor(
+    runnerName: string,
+    rpcURL: string,
+    outputJsonFileName: string,
+    heavyUpdateInterval = 24,
+    fetchDelayInHours = 1
+  ) {
+    this.runnerName = runnerName;
     console.log(`runner name: ${this.runnerName}`);
     const dataDir = path.join(process.cwd(), 'data');
     if (!fs.existsSync(dataDir)) {

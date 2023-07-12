@@ -5,7 +5,7 @@ import { CompoundParser } from './CompoundParser';
 
 /**
  * Moonwell parser is a compound fork with specific getFallbackprice
- * All prices will come from the oracle
+ * All prices will come from the oracle because we can't find token prices from coingecko
  */
 export class MoonwellParser extends CompoundParser {
   oracleAddress?: string;
