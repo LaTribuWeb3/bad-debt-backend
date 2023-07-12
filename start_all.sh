@@ -23,6 +23,9 @@ sleep 120
 pm2 restart bad-debt-backend.pm2.config.js --only bdts-eth-ironbank -s
 echo "started bdts-eth-ironbank. Waiting before starting next"
 sleep 120
+pm2 restart bad-debt-backend.pm2.config.js --only bdts-bsc-venus -s
+echo "started bdts-bsc-venus. Waiting before starting next"
+sleep 120
 pm2 restart bad-debt-backend.pm2.config.js --only bdts-bsc-rikkei -s
 echo "started bdts-bsc-rikkei. Waiting before starting next"
 sleep 120

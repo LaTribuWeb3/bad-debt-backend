@@ -107,7 +107,7 @@ export abstract class ProtocolParser {
   }
 
   /**
-   * this is the base function that CAN be overriden for certains parsers
+   * this is the base function that MIGHT be overriden for certains parsers
    * Example: MIM markets because of the number of calderons
    * @returns
    */
