@@ -65,7 +65,7 @@ export function GetChainToken(network: string): TokenInfos {
         name: 'BNB',
         symbol: 'BNB'
       };
-    case 'CRONOS':
+    case 'CRO':
       return {
         address: '0x',
         decimals: 18,

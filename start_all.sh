@@ -40,6 +40,9 @@ echo "started bdts-matic-0vix. Waiting before starting next"
 sleep 120
 pm2 restart bad-debt-backend.pm2.config.js --only bdts-moonbeam-moonwell -s
 echo "started bdts-moonbeam-moonwell. Waiting before starting next"
+sleep 120
+pm2 restart bad-debt-backend.pm2.config.js --only bdts-avax-benqi -s
+echo "started bdts-avax-benqi. Waiting before starting next"
 
 
 pm2 reset all

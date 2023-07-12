@@ -6,7 +6,7 @@ export function GetRpcUrlForNetwork(network: string) {
       return process.env.RPC_URL_ETH;
     case 'BSC':
       return process.env.RPC_URL_BSC;
-    case 'CRONOS':
+    case 'CRO':
       return process.env.RPC_URL_CRONOS;
     case 'MATIC':
       return process.env.RPC_URL_MATIC;
