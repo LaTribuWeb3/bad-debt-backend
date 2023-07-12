@@ -38,7 +38,7 @@ export class AurigamiParser extends CompoundParser {
 
       for (const market of userAssetsIn) {
         if (!this.markets.some((_) => _.toLowerCase() == market.toString().toLowerCase())) {
-          console.log(`ignoring market ${market} from userAssetsIn because not in this.markets`);
+          // console.log(`ignoring market ${market} from userAssetsIn because not in this.markets`);
           continue;
         }
         const snapshotParam: MulticallParameter = {
@@ -62,7 +62,7 @@ export class AurigamiParser extends CompoundParser {
 
       for (const market of userAssetsIn) {
         if (!this.markets.some((_) => _.toLowerCase() == market.toString().toLowerCase())) {
-          console.log(`ignoring market ${market} from userAssetsIn because not in this.markets`);
+          // console.log(`ignoring market ${market} from userAssetsIn because not in this.markets`);
           continue;
         }
         const cTokenInfos = await GetTokenInfos(this.config.network, market.toString());

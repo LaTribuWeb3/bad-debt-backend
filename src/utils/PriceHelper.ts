@@ -1,4 +1,5 @@
-import axios, { AxiosResponse } from 'axios';
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import axios from 'axios';
 import { normalize, retry, sleep } from './Utils';
 import { JsonRpcProvider } from 'ethers';
 import {
@@ -503,6 +504,7 @@ const specialAssetPriceFetchers = {
     // fetch USN price from coingecko simple price API
     const coingeckoCall = 'https://api.coingecko.com/api/v3/simple/price?ids=usn&vs_currencies=USD';
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const axiosResp: any = await retry(axios.get, [coingeckoCall]);
     return Number(axiosResp.data['usn'].usd);
   },
@@ -514,6 +516,7 @@ const specialAssetPriceFetchers = {
     // fetch TUSD price from coingecko simple price API
     const coingeckoCall = 'https://api.coingecko.com/api/v3/simple/price?ids=true-usd&vs_currencies=USD';
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const axiosResp: any = await retry(axios.get, [coingeckoCall]);
     return Number(axiosResp.data['true-usd'].usd);
   },
@@ -525,6 +528,7 @@ const specialAssetPriceFetchers = {
     // SONNE
     const coingeckoCall = 'https://api.coingecko.com/api/v3/simple/price?ids=sonne-finance&vs_currencies=USD';
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const axiosResp: any = await retry(axios.get, [coingeckoCall]);
     return Number(axiosResp.data['sonne-finance'].usd);
   }

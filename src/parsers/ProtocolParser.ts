@@ -216,6 +216,7 @@ export abstract class ProtocolParser {
    * @param userAddress the user address
    * @returns user additional collateral value in $
    */
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async additionalCollateralBalance(userAddress: string): Promise<number> {
     // console.log(`additionalCollateralBalance[${userAddress}]: 0`);
     return 0;

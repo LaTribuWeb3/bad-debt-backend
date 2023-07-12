@@ -40,6 +40,7 @@ export async function GetTokenInfos(network: string, address: string): Promise<T
 
     // console.log(`GetTokenInfos[${network}]: getting infos for ${address}`);
     const fullUrl = `${web3ApiUrl}/api/token/infos?network=${network}&tokenAddress=${address}`;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const axiosResp: any = await retry(axios.get, [fullUrl]);
     tokenInfosCache[network][address] = axiosResp.data;
   }

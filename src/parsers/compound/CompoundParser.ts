@@ -1,5 +1,4 @@
 import { CToken__factory, Comptroller, Comptroller__factory, ERC20__factory } from '../../contracts/types';
-import { CONSTANTS } from '../../utils/Constants';
 import { FetchAllEventsAndExtractStringArray } from '../../utils/EventHelper';
 import { ExecuteMulticall, MulticallParameter } from '../../utils/MulticallHelper';
 import { GetEthPrice, GetPrice, getCTokenPriceFromZapper } from '../../utils/PriceHelper';
@@ -107,6 +106,7 @@ export class CompoundParser extends ProtocolParser {
     this.prices = prices;
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   override async getFallbackPrice(address: string): Promise<number> {
     return 0;
   }
@@ -201,7 +201,7 @@ export class CompoundParser extends ProtocolParser {
       for (const market of userAssetsIn) {
         // ignore market not in protocol market list
         if (!this.markets.some((_) => _.toLowerCase() == market.toString().toLowerCase())) {
-          console.log(`ignoring market ${market} from userAssetsIn because not in this.markets`);
+          // console.log(`ignoring market ${market} from userAssetsIn because not in this.markets`);
           continue;
         }
         const snapshotParam: MulticallParameter = {
@@ -225,7 +225,7 @@ export class CompoundParser extends ProtocolParser {
 
       for (const market of userAssetsIn) {
         if (!this.markets.some((_) => _.toLowerCase() == market.toString().toLowerCase())) {
-          console.log(`ignoring market ${market} from userAssetsIn because not in this.markets`);
+          // console.log(`ignoring market ${market} from userAssetsIn because not in this.markets`);
           continue;
         }
         const cTokenInfos = await GetTokenInfos(this.config.network, market.toString());

@@ -1,7 +1,7 @@
-import { CompoundOracle__factory, ERC20__factory } from '../../contracts/types';
+import { ERC20__factory } from '../../contracts/types';
 import { GetPrice, fetchZapperTotal } from '../../utils/PriceHelper';
-import { GetChainToken, GetTokenInfos, TokenInfos } from '../../utils/TokenHelper';
-import { normalize, retry } from '../../utils/Utils';
+import { GetTokenInfos } from '../../utils/TokenHelper';
+import { normalize } from '../../utils/Utils';
 import { ComputeUserValue } from '../ProtocolParser';
 import { CompoundParser } from './CompoundParser';
 
