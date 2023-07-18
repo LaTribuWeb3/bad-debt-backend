@@ -14,7 +14,7 @@ export async function FetchAllEventsAndExtractStringArray(
   const logPrefix = `fetchAllEvents[${contractName}-${eventName}-${argNames.join(',')}]`;
 
   console.log(`${logPrefix}: will fetch events for ${targetBlock - startBlock + 1} blocks`);
-  let blockStep = blockStepLimit || 10000;
+  let blockStep = blockStepLimit && blockStepLimit < 10000 ? blockStepLimit : 10000;
   let fromBlock = startBlock;
   let toBlock = 0;
   let cptError = 0;
