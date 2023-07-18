@@ -8,8 +8,6 @@ import { CompoundParser } from './CompoundParser';
  * All prices will come from the oracle because we can't find token prices from coingecko
  */
 export class MoonwellParser extends CompoundParser {
-  oracleAddress?: string;
-
   override async getFallbackPrice(address: string): Promise<number> {
     const rektMarkets = [
       '0xc3090f41eb54a7f18587fd6651d4d3ab477b07a4', // mETH

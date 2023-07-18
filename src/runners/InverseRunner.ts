@@ -1,7 +1,7 @@
 import * as dotenv from 'dotenv';
 import { GetRpcUrlForNetwork } from '../utils/Utils';
-import { InverseParser } from '../parsers/compound/InverseParser';
 import config from '../configs/InverseRunnerConfig.json';
+import { CompoundParser } from '../parsers/compound/CompoundParser';
 dotenv.config();
 
 async function InverseRunner() {
@@ -11,7 +11,7 @@ async function InverseRunner() {
   }
 
   const runnerName = 'InverseParser-Runner';
-  const parser = new InverseParser(config, runnerName, rpcUrl, 'ethereum_inverse.json', 24 * 5, 24);
+  const parser = new CompoundParser(config, runnerName, rpcUrl, 'ethereum_inverse.json', 24 * 5, 24);
   await parser.main();
 }
 

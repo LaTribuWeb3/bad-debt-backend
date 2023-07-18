@@ -9,8 +9,6 @@ import { CompoundParser } from './CompoundParser';
  * IronBank parser is a compound fork with specific additionalCollateralBalance
  */
 export class IronBankParser extends CompoundParser {
-  oracleAddress?: string;
-
   async balanceValue(token: string, user: string) {
     const alphaTokenContract = ERC20__factory.connect(token, this.web3Provider);
     const balance = await alphaTokenContract.balanceOf(user);

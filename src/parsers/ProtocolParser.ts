@@ -275,6 +275,7 @@ export abstract class ProtocolParser {
     console.log(`${this.runnerName}: tvl: ${this.tvl}`);
     console.log(`${this.runnerName}: borrows: ${this.borrows}`);
     console.log(`${this.runnerName}: bad debt: ${sumOfBadDebt}`);
+    console.log(`${this.runnerName}: users with bad debt: ${usersWithBadDebt.length}`);
 
     // fs.writeFileSync(`users_${Math.round(Date.now() / 1000)}.json`, JSON.stringify(this.users));
 

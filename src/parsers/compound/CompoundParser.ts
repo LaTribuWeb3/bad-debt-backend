@@ -1,4 +1,10 @@
-import { CToken__factory, Comptroller, Comptroller__factory, ERC20__factory } from '../../contracts/types';
+import {
+  CToken__factory,
+  CompoundOracle__factory,
+  Comptroller,
+  Comptroller__factory,
+  ERC20__factory
+} from '../../contracts/types';
 import { FetchAllEventsAndExtractStringArray } from '../../utils/EventHelper';
 import { ExecuteMulticall, MulticallParameter } from '../../utils/MulticallHelper';
 import { GetEthPrice, GetPrice, getCTokenPriceFromZapper } from '../../utils/PriceHelper';
@@ -16,6 +22,7 @@ export class CompoundParser extends ProtocolParser {
   rektMarkets: string[];
   nonBorrowableMarkets: string[];
   underlyings: { [cTokenAddress: string]: string };
+  oracleAddress?: string;
 
   constructor(
     config: CompoundConfig,
@@ -106,9 +113,24 @@ export class CompoundParser extends ProtocolParser {
     this.prices = prices;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  // by default, find the price from the oracle
   override async getFallbackPrice(address: string): Promise<number> {
-    return 0;
+    if (!this.oracleAddress) {
+      this.oracleAddress = await retry(this.comptroller.oracle, []);
+    }
+
+    const oracleContract = CompoundOracle__factory.connect(this.oracleAddress, this.web3Provider);
+
+    let underlyingTokenInfos: TokenInfos | undefined = undefined;
+    if (this.config.cETHAddresses.some((_) => _.toLowerCase() == address.toLowerCase())) {
+      underlyingTokenInfos = GetChainToken(this.config.network);
+    } else {
+      underlyingTokenInfos = await GetTokenInfos(this.config.network, this.underlyings[address]);
+    }
+
+    // The price of the asset in USD as an unsigned integer scaled up by 10 ^ (36 - underlying asset decimals
+    const underlyingPrice = await retry(oracleContract.getUnderlyingPrice, [address]);
+    return normalize(underlyingPrice, 36 - underlyingTokenInfos.decimals);
   }
 
   override async fetchUsersData(targetBlockNumber: number): Promise<void> {
