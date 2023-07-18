@@ -1,5 +1,5 @@
-# this script should only be used with correctly configured pm2 config file
-# this is not used to testing (named bad-debt-backend.pm2.config.js)
+# this script should only be used with correctly configured pm2 config file (named bad-debt-backend.pm2.config.js)
+# this is not used for testing or local dev
 
 echo "Restarting all bad debt runners"
 pm2 restart bad-debt-backend.pm2.config.js --only bdts-opt-sonne -s
@@ -43,6 +43,8 @@ echo "started bdts-moonbeam-moonwell. Waiting before starting next"
 sleep 120
 pm2 restart bad-debt-backend.pm2.config.js --only bdts-avax-benqi -s
 echo "started bdts-avax-benqi. Waiting before starting next"
-
+sleep 120
+pm2 restart bad-debt-backend.pm2.config.js --only bdts-cro-tectonic -s
+echo "started bdts-cro-tectonic. Waiting before starting next"
 
 pm2 reset all
