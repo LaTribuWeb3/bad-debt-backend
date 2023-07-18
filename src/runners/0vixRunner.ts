@@ -1,7 +1,7 @@
 import * as dotenv from 'dotenv';
 import config from '../configs/0vixRunnerConfig.json';
 import { GetRpcUrlForNetwork } from '../utils/Utils';
-import { CompoundParser } from '../parsers/compound/CompoundParser';
+import { _0vixParser } from '../parsers/compound/0vixParser';
 dotenv.config();
 
 async function _0vixRunner() {
@@ -11,7 +11,7 @@ async function _0vixRunner() {
   }
 
   const runnerName = '_0vixParser-Runner';
-  const parser = new CompoundParser(config, runnerName, rpcUrl, 'polygon_0vix.json', 24, 1);
+  const parser = new _0vixParser(config, runnerName, rpcUrl, 'polygon_0vix.json', 24, 1);
   await parser.main();
 }
 
