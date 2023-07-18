@@ -114,6 +114,13 @@ export function GetChainToken(network: string): TokenInfos {
         name: 'Moonbeam',
         symbol: 'GLMR'
       };
+    case 'FTM':
+      return {
+        address: '0x',
+        decimals: 18,
+        name: 'Fantom',
+        symbol: 'FTM'
+      };
     default:
       throw new Error(`Cannot find chain token for ${network}`);
   }

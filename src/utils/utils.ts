@@ -20,6 +20,8 @@ export function GetRpcUrlForNetwork(network: string) {
       return process.env.RPC_URL_AVAX;
     case 'MOONBEAM':
       return process.env.RPC_URL_MOONBEAM;
+    case 'FTM':
+      return process.env.RPC_URL_FANTOM;
   }
 }
 

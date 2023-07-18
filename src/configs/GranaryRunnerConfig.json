@@ -1,0 +1,18 @@
+{
+	"FANTOM": {
+		"lendingPoolAddressesProviderAddress": "0x8b9D58E2Dc5e9b5275b62b1F30b3c0AC87138130",
+		"deployBlock": 32461920,
+		"blockStepLimit": 10000000,
+		"multicallSize": 100,
+		"multicallParallelSize": 2,
+		"network": "FTM"
+	},
+	"OPTIMISM": {
+		"lendingPoolAddressesProviderAddress": "0xdDE5dC81e40799750B92079723Da2acAF9e1C6D6",
+		"deployBlock": 9004440,
+		"blockStepLimit": 10000000,
+		"multicallSize": 400,
+		"multicallParallelSize": 5,
+		"network": "OPTIMISM"
+	}
+}
