@@ -4,6 +4,11 @@ import { GetRpcUrlForNetwork } from '../utils/Utils';
 import { GranaryParser } from '../parsers/aave/GranaryParser';
 dotenv.config();
 
+const fileNameMap = {
+  FANTOM: 'FTM_granary.json',
+  OPTIMISM: 'optimism_granary.json'
+};
+
 async function GranaryRunner() {
   const networkToUse = process.argv[2];
   if (!networkToUse) {
@@ -20,7 +25,8 @@ async function GranaryRunner() {
   }
 
   const runnerName = `GranaryParser-${config.network}-Runner`;
-  const parser = new GranaryParser(config, runnerName, rpcUrl, `${networkToUse.toLowerCase()}_granary.json`, 24, 1);
+  const jsonFileName = fileNameMap[networkToUse.toUpperCase() as keyof typeof fileNameMap];
+  const parser = new GranaryParser(config, runnerName, rpcUrl, jsonFileName, 24, 1);
   await parser.main();
 }
 
