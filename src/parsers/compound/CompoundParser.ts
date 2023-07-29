@@ -167,6 +167,10 @@ export class CompoundParser extends ProtocolParser {
 
   async updateUsers(usersToUpdate: string[]) {
     // delete all users that will be updated from this.users
+    // this is needed because the 'updateUsersWithMulticall' function only updates debt and collateral
+    // of the markets where the user is in. Without this, if a user is in market "A" during the first iteration
+    // then change all its "A" tokens to "B", then the second iteration will not update its "A" token values and
+    // will add some "B" tokens to debt/collateral
     if (Object.keys(this.users).length > 0) {
       for (const userToUpdate of usersToUpdate) {
         console.log(`resetting values for user ${userToUpdate}`);
