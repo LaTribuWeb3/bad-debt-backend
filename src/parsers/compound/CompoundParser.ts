@@ -142,6 +142,8 @@ export class CompoundParser extends ProtocolParser {
     let isHeavyUpdate = false;
     if (this.lastHeavyUpdate < Date.now() - this.heavyUpdateInterval * 3600 * 1000) {
       isHeavyUpdate = true;
+      // reset users when doing heavy update
+      this.users = {};
       console.log(`${logPrefix} starting heavy update because last heavy update is: ${this.lastHeavyUpdate}`);
       usersToUpdate = await this.processHeavyUpdate(targetBlockNumber);
       console.log(`${logPrefix} heavy update completed, will fetch data for ${usersToUpdate.length} users`);
@@ -164,7 +166,19 @@ export class CompoundParser extends ProtocolParser {
   }
 
   async updateUsers(usersToUpdate: string[]) {
-    // need to get: 1) user in market 2) user collateral in all markets 3) user borrow balance in all markets
+    // delete all users that will be updated from this.users
+    // this is needed because the 'updateUsersWithMulticall' function only updates debt and collateral
+    // of the markets where the user is in. Without this, if a user is in market "A" during the first iteration
+    // then change all his "A" tokens to "B", then the second iteration will not update his "A" token value to 0 and
+    // will add some "B" tokens to debt/collateral. This creates a deviation from reality
+    if (Object.keys(this.users).length > 0) {
+      for (const userToUpdate of usersToUpdate) {
+        console.log(`resetting values for user ${userToUpdate}`);
+        delete this.users[userToUpdate];
+      }
+    }
+
+    // then in batch, fetch users data using multicall
     let startIndex = 0;
     let promises = [];
     while (startIndex < usersToUpdate.length) {
