@@ -3,8 +3,8 @@
 		"lendingPoolAddressesProviderAddress": "0x3673C22153E363B1da69732c4E0aA71872Bbb87F",
 		"deployBlock": 21726232,
 		"blockStepLimit": 10000000,
-		"multicallSize": 1000,
-		"multicallParallelSize": 5,
+		"multicallSize": 100,
+		"multicallParallelSize": 2,
 		"network": "GNOSIS"
 	}
 }

@@ -33,6 +33,7 @@ export class AaveParser extends ProtocolParser {
       config.lendingPoolAddressesProviderAddress,
       this.web3Provider
     );
+
     this.chainToken = GetChainToken(this.config.network);
   }
 
