@@ -5,6 +5,7 @@ import {
   Comptroller__factory,
   ERC20__factory
 } from '../../contracts/types';
+import { CONSTANTS } from '../../utils/Constants';
 import { FetchAllEventsAndExtractStringArray } from '../../utils/EventHelper';
 import { ExecuteMulticall, MulticallParameter } from '../../utils/MulticallHelper';
 import { GetEthPrice, GetPrice, getCTokenPriceFromZapper } from '../../utils/PriceHelper';
@@ -45,6 +46,8 @@ export class CompoundParser extends ProtocolParser {
   override async initPrices(): Promise<void> {
     let logPrefix = `${this.runnerName} | initPrices |`;
     console.log(`${logPrefix} getting compound markets`);
+    // const logs = await this.comptroller.queryFilter(this.comptroller.filters.MarketEntered(), 32139323, 32139323);
+    // console.log(await this.comptroller.filters.MarketEntered().getTopicFilter());
     this.markets = await retry(this.comptroller.getAllMarkets, []);
     console.log(`${logPrefix} found ${this.markets.length} markets`);
 

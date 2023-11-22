@@ -27,11 +27,11 @@ export async function FetchAllEventsAndExtractStringArray(
     let events = undefined;
     try {
       events = await contract.queryFilter(eventName, fromBlock, toBlock);
-    } catch (e) {
-      // console.log(`query filter error: ${e.toString()}`);
+    } catch (e: any) {
+      console.log(`query filter error: ${e.toString()}`);
       blockStep = Math.round(blockStep / 2);
-      if (blockStep < 1000) {
-        blockStep = 1000;
+      if (blockStep < 2) {
+        blockStep = 2;
       }
       toBlock = 0;
       cptError++;
@@ -39,7 +39,7 @@ export async function FetchAllEventsAndExtractStringArray(
         console.log(`getPastEvents error: ${e}`);
         throw e;
       }
-      await sleep(5000);
+      await sleep(1000);
       continue;
     }
 

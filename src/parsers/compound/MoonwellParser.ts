@@ -15,7 +15,7 @@ export class MoonwellParser extends CompoundParser {
       '0x02e9081dfadd37a852f9a73c4d7d69e615e61334' // mUSDC
     ];
 
-    // negligable value
+    // negligible value
     if (rektMarkets.some((_) => _.toLowerCase() == address.toLowerCase())) {
       return 1 / 1e18;
     } else {
