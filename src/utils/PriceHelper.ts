@@ -181,6 +181,9 @@ const chainTokenFetchers = {
 };
 
 export async function GetPrice(network: string, address: string, web3Provider: JsonRpcProvider): Promise<number> {
+  if (network == 'GOERLI') {
+    return 1;
+  }
   if (network === 'MOONBEAM') return 0;
 
   const specialPriceFetcher =

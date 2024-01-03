@@ -1,0 +1,10 @@
+{
+    "network": "GOERLI",
+    "vaultAddresses": [
+        "0xb6c383fF0257D20e4c9872B6c9F1ce412F4AAC4C"
+    ],
+    "deployBlock": 10075789,
+    "morphoBlueAddress": "0x64c7044050Ba0431252df24fEd4d9635a275CB41",
+    "multicallSize": 100,
+    "multicallParallelSize": 1
+}
