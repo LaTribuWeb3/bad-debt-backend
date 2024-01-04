@@ -419,7 +419,11 @@
 	},
 	{
 		"inputs": [
-
+			{
+				"internalType": "Id",
+				"name": "id",
+				"type": "bytes32"
+			}
 		],
 		"name": "MarketNotEnabled",
 		"type": "error"
@@ -456,6 +460,13 @@
 		"inputs": [
 
 		],
+		"name": "NonZeroCap",
+		"type": "error"
+	},
+	{
+		"inputs": [
+
+		],
 		"name": "NotAllocatorRole",
 		"type": "error"
 	},
@@ -471,6 +482,13 @@
 
 		],
 		"name": "NotCuratorRole",
+		"type": "error"
+	},
+	{
+		"inputs": [
+
+		],
+		"name": "NotEnoughLiquidity",
 		"type": "error"
 	},
 	{
@@ -500,6 +518,24 @@
 			}
 		],
 		"name": "OwnableUnauthorizedAccount",
+		"type": "error"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "Id",
+				"name": "id",
+				"type": "bytes32"
+			}
+		],
+		"name": "PendingCap",
+		"type": "error"
+	},
+	{
+		"inputs": [
+
+		],
+		"name": "PendingRemoval",
 		"type": "error"
 	},
 	{
@@ -573,13 +609,6 @@
 		"inputs": [
 
 		],
-		"name": "WithdrawMorphoFailed",
-		"type": "error"
-	},
-	{
-		"inputs": [
-
-		],
 		"name": "ZeroAddress",
 		"type": "error"
 	},
@@ -596,11 +625,17 @@
 			{
 				"indexed": false,
 				"internalType": "uint256",
+				"name": "newTotalAssets",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
 				"name": "feeShares",
 				"type": "uint256"
 			}
 		],
-		"name": "AccrueFee",
+		"name": "AccrueInterest",
 		"type": "event"
 	},
 	{
@@ -1135,7 +1170,7 @@
 			{
 				"indexed": false,
 				"internalType": "uint256",
-				"name": "newTotalAssets",
+				"name": "updatedTotalAssets",
 				"type": "uint256"
 			}
 		],
@@ -1183,6 +1218,21 @@
 		"inputs": [
 
 		],
+		"name": "DECIMALS_OFFSET",
+		"outputs": [
+			{
+				"internalType": "uint8",
+				"name": "",
+				"type": "uint8"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+
+		],
 		"name": "DOMAIN_SEPARATOR",
 		"outputs": [
 			{
@@ -1212,9 +1262,36 @@
 	{
 		"inputs": [
 			{
-				"internalType": "Id",
-				"name": "id",
-				"type": "bytes32"
+				"components": [
+					{
+						"internalType": "address",
+						"name": "loanToken",
+						"type": "address"
+					},
+					{
+						"internalType": "address",
+						"name": "collateralToken",
+						"type": "address"
+					},
+					{
+						"internalType": "address",
+						"name": "oracle",
+						"type": "address"
+					},
+					{
+						"internalType": "address",
+						"name": "irm",
+						"type": "address"
+					},
+					{
+						"internalType": "uint256",
+						"name": "lltv",
+						"type": "uint256"
+					}
+				],
+				"internalType": "struct MarketParams",
+				"name": "marketParams",
+				"type": "tuple"
 			}
 		],
 		"name": "acceptCap",
@@ -1350,9 +1427,9 @@
 		"name": "config",
 		"outputs": [
 			{
-				"internalType": "uint192",
+				"internalType": "uint184",
 				"name": "cap",
-				"type": "uint192"
+				"type": "uint184"
 			},
 			{
 				"internalType": "bool",
@@ -1360,9 +1437,9 @@
 				"type": "bool"
 			},
 			{
-				"internalType": "uint56",
+				"internalType": "uint64",
 				"name": "removableAt",
-				"type": "uint56"
+				"type": "uint64"
 			}
 		],
 		"stateMutability": "view",
@@ -1768,9 +1845,9 @@
 				"type": "uint192"
 			},
 			{
-				"internalType": "uint56",
+				"internalType": "uint64",
 				"name": "validAt",
-				"type": "uint56"
+				"type": "uint64"
 			}
 		],
 		"stateMutability": "view",
@@ -1788,9 +1865,9 @@
 				"type": "address"
 			},
 			{
-				"internalType": "uint56",
+				"internalType": "uint64",
 				"name": "validAt",
-				"type": "uint56"
+				"type": "uint64"
 			}
 		],
 		"stateMutability": "view",
@@ -1823,9 +1900,9 @@
 				"type": "uint192"
 			},
 			{
-				"internalType": "uint56",
+				"internalType": "uint64",
 				"name": "validAt",
-				"type": "uint56"
+				"type": "uint64"
 			}
 		],
 		"stateMutability": "view",
@@ -2288,9 +2365,36 @@
 	{
 		"inputs": [
 			{
-				"internalType": "Id",
-				"name": "id",
-				"type": "bytes32"
+				"components": [
+					{
+						"internalType": "address",
+						"name": "loanToken",
+						"type": "address"
+					},
+					{
+						"internalType": "address",
+						"name": "collateralToken",
+						"type": "address"
+					},
+					{
+						"internalType": "address",
+						"name": "oracle",
+						"type": "address"
+					},
+					{
+						"internalType": "address",
+						"name": "irm",
+						"type": "address"
+					},
+					{
+						"internalType": "uint256",
+						"name": "lltv",
+						"type": "uint256"
+					}
+				],
+				"internalType": "struct MarketParams",
+				"name": "marketParams",
+				"type": "tuple"
 			}
 		],
 		"name": "submitMarketRemoval",

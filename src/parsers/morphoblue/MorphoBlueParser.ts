@@ -1,13 +1,23 @@
+import { ethers } from 'ethers';
 import { MetaMorpho, MetaMorpho__factory, MorphoBlue, MorphoBlue__factory } from '../../contracts/types';
+import { TypedDeferredTopicFilter, TypedContractEvent } from '../../contracts/types/common';
+import { SupplyEvent } from '../../contracts/types/MorphoBlue';
+import { FetchAllEventsAndExtractStringArray } from '../../utils/EventHelper';
+import { ExecuteMulticall, MulticallParameter } from '../../utils/MulticallHelper';
 import { GetPrice } from '../../utils/PriceHelper';
 import { GetTokenInfos } from '../../utils/TokenHelper';
-import { normalize } from '../../utils/Utils';
+import { LoadUserListFromDisk, SaveUserListToDisk } from '../../utils/UserHelper';
+import { normalize, retry, roundTo, sleep } from '../../utils/Utils';
 import { ProtocolParser } from '../ProtocolParser';
 import { MorphoBlueConfig } from './MorphoBlueConfig';
 
+const SHARE_DECIMALS = 12; // why not
+
 interface MorphoMarketData {
   loanToken: string;
+  loanTokenDecimals: number;
   collateralToken: string;
+  collateralTokenDecimals: number;
   totalSupply: number;
   totalBorrow: number;
   totalSupplyShares: number;
@@ -79,11 +89,15 @@ export class MorphoBlueParser extends ProtocolParser {
 
       // get collateral token price if not already known
       if (!this.prices[marketParams.collateralToken]) {
-        this.prices[marketParams.collateralToken] = await GetPrice(
-          this.config.network,
-          marketParams.collateralToken,
-          this.web3Provider
-        );
+        if (marketParams.collateralToken == ethers.ZeroAddress) {
+          this.prices[marketParams.collateralToken] = 0;
+        } else {
+          this.prices[marketParams.collateralToken] = await GetPrice(
+            this.config.network,
+            marketParams.collateralToken,
+            this.web3Provider
+          );
+        }
       }
 
       // get loan token infos
@@ -95,12 +109,19 @@ export class MorphoBlueParser extends ProtocolParser {
       const marketSupply = normalize(marketInfo.totalSupplyAssets, loanTokenInfos.decimals);
       this.marketData[marketId] = {
         collateralToken: marketParams.collateralToken,
+        collateralTokenDecimals: 0,
         loanToken: marketParams.loanToken,
+        loanTokenDecimals: loanTokenInfos.decimals,
         totalBorrow: marketBorrow,
         totalSupply: marketSupply,
-        totalBorrowShares: normalize(marketInfo.totalBorrowShares, 12),
-        totalSupplyShares: normalize(marketInfo.totalSupplyShares, 12)
+        totalBorrowShares: normalize(marketInfo.totalBorrowShares, SHARE_DECIMALS),
+        totalSupplyShares: normalize(marketInfo.totalSupplyShares, SHARE_DECIMALS)
       };
+
+      if (marketParams.collateralToken != ethers.ZeroAddress) {
+        const collateralTokenInfos = await GetTokenInfos(this.config.network, marketParams.collateralToken);
+        this.marketData[marketId].collateralTokenDecimals = collateralTokenInfos.decimals;
+      }
 
       this.tvl += marketSupply * this.prices[marketParams.loanToken];
       this.borrows += marketBorrow * this.prices[marketParams.loanToken];
@@ -111,7 +132,151 @@ export class MorphoBlueParser extends ProtocolParser {
     return Promise.resolve(0);
   }
 
-  fetchUsersData(blockNumber: number): Promise<void> {
-    throw new Error('Method not implemented.');
+  async fetchUsersData(blockNumber: number): Promise<void> {
+    const logPrefix = `${this.runnerName} | fetchUsersData |`;
+
+    const usersToUpdate: string[] = await this.collectAllUsersForMarkets(blockNumber);
+
+    await this.updateUsers(usersToUpdate);
+  }
+
+  async collectAllUsersForMarkets(blockNumber: number): Promise<string[]> {
+    this.userList = [];
+    let firstBlockToFetch = this.config.deployBlock;
+
+    // load users from disk file if any
+    const storedUserData = LoadUserListFromDisk(this.userListFullPath);
+    if (storedUserData) {
+      this.userList = storedUserData.userList;
+      firstBlockToFetch = storedUserData.lastBlockFetched + 1;
+    }
+
+    for (const marketId of this.marketIds) {
+      const filterSupply = this.morphoBlue.filters.Supply(marketId);
+      await this.GetAndMergeUsersForFilter(filterSupply, firstBlockToFetch, blockNumber, marketId);
+      const filterSupplyCollateral = this.morphoBlue.filters.SupplyCollateral(marketId);
+      await this.GetAndMergeUsersForFilter(filterSupplyCollateral, firstBlockToFetch, blockNumber, marketId);
+    }
+
+    // save user list in disk file
+    SaveUserListToDisk(this.userListFullPath, this.userList, blockNumber);
+
+    // return full user list to be updated
+    return this.userList;
+  }
+
+  private async GetAndMergeUsersForFilter(
+    filter: TypedDeferredTopicFilter<
+      TypedContractEvent<SupplyEvent.InputTuple, SupplyEvent.OutputTuple, SupplyEvent.OutputObject>
+    >,
+    firstBlockToFetch: number,
+    blockNumber: number,
+    marketId: string
+  ) {
+    const userListForThisMarket = await FetchAllEventsAndExtractStringArray(
+      this.morphoBlue,
+      'MorphoBlue',
+      filter,
+      ['onBehalf'],
+      firstBlockToFetch,
+      blockNumber,
+      this.config.blockStepLimit
+    );
+
+    const concatenatedWithMarket = userListForThisMarket.map((userAddress) => `${userAddress}_${marketId}`);
+    // merge into this.userList with old userList without duplicates
+    this.userList = Array.from(new Set(this.userList.concat(concatenatedWithMarket)));
+  }
+
+  async updateUsers(usersToUpdate: string[]) {
+    // delete all users that will be updated from this.users
+    // this is needed because the 'updateUsersWithMulticall' function only updates debt and collateral
+    // of the markets where the user is in. Without this, if a user is in market "A" during the first iteration
+    // then change all his "A" tokens to "B", then the second iteration will not update his "A" token value to 0 and
+    // will add some "B" tokens to debt/collateral. This creates a deviation from reality
+    if (Object.keys(this.users).length > 0) {
+      for (const userToUpdate of usersToUpdate) {
+        console.log(`resetting values for user ${userToUpdate}`);
+        delete this.users[userToUpdate];
+      }
+    }
+
+    // then in batch, fetch users data using multicall
+    let startIndex = 0;
+    let promises = [];
+    while (startIndex < usersToUpdate.length) {
+      let endIndex = startIndex + this.config.multicallSize;
+      if (endIndex >= usersToUpdate.length) {
+        endIndex = usersToUpdate.length;
+      }
+
+      const userAddresses = usersToUpdate.slice(startIndex, endIndex);
+      console.log(
+        `updateUsers: fetching users [${startIndex} -> ${endIndex - 1}]. Progress: ${roundTo(
+          (endIndex / usersToUpdate.length) * 100
+        )}%`
+      );
+
+      promises.push(this.updateUsersWithMulticall(userAddresses));
+      await sleep(100);
+
+      if (promises.length >= this.config.multicallParallelSize) {
+        // console.log('awaiting multicalls');
+        await Promise.all(promises);
+        promises = [];
+      }
+
+      startIndex += this.config.multicallSize;
+    }
+    await Promise.all(promises);
+  }
+
+  async updateUsersWithMulticall(userAddresses: string[]) {
+    const assetsInParameters: MulticallParameter[] = [];
+    for (const userAddress of userAddresses) {
+      const user = userAddress.split('_')[0];
+      const marketId = userAddress.split('_')[1];
+      const assetInParam: MulticallParameter = {
+        targetAddress: this.config.morphoBlueAddress,
+        targetFunction: 'position(bytes32,address)',
+        inputData: [marketId, user],
+        //  supplyShares uint256, borrowShares uint128, collateral uint128
+        outputTypes: ['uint256', 'uint128', 'uint128']
+      };
+
+      assetsInParameters.push(assetInParam);
+    }
+
+    // assetIn results will store each assetIn value for each users in the valid order
+    const positionResults = await retry(ExecuteMulticall, [this.config.network, this.web3Provider, assetsInParameters]);
+
+    let userIndex = 0;
+    for (const userAddress of userAddresses) {
+      const user = userAddress.split('_')[0];
+      const marketId = userAddress.split('_')[1];
+
+      const marketDataForMarket = this.marketData[marketId];
+
+      const userResult = positionResults[userIndex];
+
+      const borrowShares = normalize(userResult[1], SHARE_DECIMALS);
+      const collateral = normalize(userResult[2], marketDataForMarket.collateralTokenDecimals);
+
+      let borrowAssets = 0;
+      if (borrowShares > 0) {
+        borrowAssets =
+          (this.marketData[marketId].totalBorrow * borrowShares) / this.marketData[marketId].totalBorrowShares;
+      }
+
+      this.users[userAddress] = {
+        collaterals: {},
+        debts: {}
+      };
+
+      this.users[userAddress].collaterals[marketDataForMarket.collateralToken] = collateral;
+      this.users[userAddress].debts[marketDataForMarket.loanToken] = borrowAssets;
+
+      userIndex++;
+    }
   }
 }

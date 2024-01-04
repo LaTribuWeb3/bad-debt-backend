@@ -5,6 +5,6 @@
     ],
     "deployBlock": 10075789,
     "morphoBlueAddress": "0x64c7044050Ba0431252df24fEd4d9635a275CB41",
-    "multicallSize": 100,
+    "multicallSize": 20,
     "multicallParallelSize": 1
 }

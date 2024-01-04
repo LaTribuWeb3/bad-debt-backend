@@ -1,10 +1,10 @@
-import { BaseContract, EventLog } from 'ethers';
+import { BaseContract, ContractEventName, EventLog } from 'ethers';
 import { sleep } from './Utils';
 
 export async function FetchAllEventsAndExtractStringArray(
   contract: BaseContract,
   contractName: string,
-  eventName: string,
+  eventName: string | ContractEventName,
   argNames: string[],
   startBlock: number,
   targetBlock: number,
