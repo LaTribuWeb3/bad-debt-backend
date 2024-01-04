@@ -11,7 +11,7 @@ import { normalize, retry, roundTo, sleep } from '../../utils/Utils';
 import { ComputeUserValue, ProtocolParser } from '../ProtocolParser';
 import { MorphoBlueConfig } from './MorphoBlueConfig';
 
-const SHARE_DECIMALS = 12; // why not
+const SHARE_DECIMALS = 10; // used to normalize the share number, does not really matter as long as it's always the same number that is used
 
 interface MorphoMarketData {
   loanToken: string;
@@ -135,10 +135,13 @@ export class MorphoBlueParser extends ProtocolParser {
   async fetchUsersData(blockNumber: number): Promise<void> {
     const logPrefix = `${this.runnerName} | fetchUsersData |`;
 
+    console.log(`${logPrefix} starting fetch users data`);
     const usersToUpdate: string[] = await this.collectAllUsersForMarkets(blockNumber);
 
+    console.log(`${logPrefix} users to update: ${usersToUpdate.length}`);
     await this.updateUsers(usersToUpdate);
 
+    console.log(`${logPrefix} users updated, computing specific TVL`);
     await this.computeTVL();
   }
 
@@ -147,7 +150,7 @@ export class MorphoBlueParser extends ProtocolParser {
     //  this.tvl += marketSupply * this.prices[marketParams.loanToken];
     // which is the sum of the markets supply
     // now we also want to add the user net values to it
-
+    console.log(`computeTVL: TVL without userNet value: ${this.tvl}`);
     for (const [user, data] of Object.entries(this.users)) {
       const userValue = ComputeUserValue(data, this.prices);
 
@@ -161,6 +164,8 @@ export class MorphoBlueParser extends ProtocolParser {
 
       this.tvl += userValue.netValueUsd;
     }
+
+    console.log(`computeTVL: TVL with userNet value: ${this.tvl}`);
   }
 
   async collectAllUsersForMarkets(blockNumber: number): Promise<string[]> {
@@ -301,5 +306,15 @@ export class MorphoBlueParser extends ProtocolParser {
 
       userIndex++;
     }
+  }
+
+  /**
+   * Utility function to list all markets, not used by the parser
+   */
+  async listMarketsForMorphoBlue() {
+    const blue = MorphoBlue__factory.connect('0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb', this.web3Provider);
+
+    const allEvents = await blue.queryFilter(blue.filters.CreateMarket, 18883124, 'latest');
+    console.log(allEvents.map((_) => _.args[0]));
   }
 }
