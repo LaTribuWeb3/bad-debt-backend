@@ -182,7 +182,17 @@ const chainTokenFetchers = {
 
 export async function GetPrice(network: string, address: string, web3Provider: JsonRpcProvider): Promise<number> {
   if (network == 'GOERLI') {
-    return 1;
+    if (address.toLowerCase() == '0x62bd2a599664d421132d7c54ab4dbe3233f4f0ae') {
+      return 1.0;
+    }
+
+    if (address.toLowerCase() == '0xd8134205b0328f5676aaefb3b2a0dc15f4029d8c') {
+      return 1.01;
+    }
+
+    if (address.toLowerCase() == '0x576e379fa7b899b4de1e251e935b31543df3e954') {
+      return 1.0;
+    }
   }
   if (network === 'MOONBEAM') return 0;
 

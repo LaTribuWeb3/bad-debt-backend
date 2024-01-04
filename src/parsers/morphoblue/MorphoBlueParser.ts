@@ -8,7 +8,7 @@ import { GetPrice } from '../../utils/PriceHelper';
 import { GetTokenInfos } from '../../utils/TokenHelper';
 import { LoadUserListFromDisk, SaveUserListToDisk } from '../../utils/UserHelper';
 import { normalize, retry, roundTo, sleep } from '../../utils/Utils';
-import { ProtocolParser } from '../ProtocolParser';
+import { ComputeUserValue, ProtocolParser } from '../ProtocolParser';
 import { MorphoBlueConfig } from './MorphoBlueConfig';
 
 const SHARE_DECIMALS = 12; // why not
@@ -138,6 +138,29 @@ export class MorphoBlueParser extends ProtocolParser {
     const usersToUpdate: string[] = await this.collectAllUsersForMarkets(blockNumber);
 
     await this.updateUsers(usersToUpdate);
+
+    await this.computeTVL();
+  }
+
+  async computeTVL() {
+    // from initPrices, the TVL is set as:
+    //  this.tvl += marketSupply * this.prices[marketParams.loanToken];
+    // which is the sum of the markets supply
+    // now we also want to add the user net values to it
+
+    for (const [user, data] of Object.entries(this.users)) {
+      const userValue = ComputeUserValue(data, this.prices);
+
+      // add optional aditional user collateral in $
+      const additionalCollateral = await this.additionalCollateralBalance(user);
+      if (additionalCollateral > 0) {
+        console.log(`${this.runnerName}: adding additional collateral for user ${user}: ${additionalCollateral}`);
+        userValue.netValueUsd = userValue.netValueUsd + additionalCollateral;
+        userValue.collateralUsd = userValue.collateralUsd + additionalCollateral;
+      }
+
+      this.tvl += userValue.netValueUsd;
+    }
   }
 
   async collectAllUsersForMarkets(blockNumber: number): Promise<string[]> {
