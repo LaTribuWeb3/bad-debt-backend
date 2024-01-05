@@ -1,10 +1,10 @@
 {
-    "network": "GOERLI",
+    "network": "ETH",
     "vaultAddresses": [
-        "0xb6c383fF0257D20e4c9872B6c9F1ce412F4AAC4C"
+        "0x38989bba00bdf8181f4082995b3deae96163ac5d"
     ],
-    "deployBlock": 10038133,
-    "morphoBlueAddress": "0x64c7044050Ba0431252df24fEd4d9635a275CB41",
-    "multicallSize": 20,
+    "deployBlock": 18883124,
+    "morphoBlueAddress": "0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb",
+    "multicallSize": 50,
     "multicallParallelSize": 1
 }

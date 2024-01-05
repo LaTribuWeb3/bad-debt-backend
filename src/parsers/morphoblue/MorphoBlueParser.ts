@@ -132,6 +132,10 @@ export class MorphoBlueParser extends ProtocolParser {
     return Promise.resolve(0);
   }
 
+  /**
+   * For now, does a full "heavy update" each run
+   * @param blockNumber the block number to reach
+   */
   async fetchUsersData(blockNumber: number): Promise<void> {
     const logPrefix = `${this.runnerName} | fetchUsersData |`;
 
