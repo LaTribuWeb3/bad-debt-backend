@@ -7,12 +7,13 @@ import {
 } from '../../contracts/types';
 import { FetchAllEventsAndExtractStringArray } from '../../utils/EventHelper';
 import { ExecuteMulticall, MulticallParameter } from '../../utils/MulticallHelper';
-import { GetEthPrice } from '../../utils/PriceHelper';
 import { GetChainToken, TokenInfos } from '../../utils/TokenHelper';
 import { LoadUserListFromDisk, SaveUserListToDisk } from '../../utils/UserHelper';
 import { normalize, retry, roundTo, sleep } from '../../utils/Utils';
 import { ProtocolParser } from '../ProtocolParser';
 import { Aave3Config } from './Aave3Config';
+
+const AAVE3_DECIMALS_USD = 8
 
 export class Aave3Parser extends ProtocolParser {
   config: Aave3Config;
@@ -43,21 +44,14 @@ export class Aave3Parser extends ProtocolParser {
   }
 
   override async initPrices(): Promise<void> {
-    console.log(`${this.runnerName} | initPrices | getting chain price`);
-    const chainTokenPrice = await GetEthPrice(this.config.network);
-    console.log(`${this.runnerName} | initPrices | chain price: ${chainTokenPrice}`);
-
-    // aave report all values as eth, so we store only the value for eth
-    this.prices = {
-      [`${this.chainToken.address}`]: chainTokenPrice
-    };
+    this.prices = { USD: 1 };
   }
 
   async getPool(): Promise<Aave3Pool> {
     if (!this.pool) {
       console.log(`${this.runnerName} | getLendingPool | getting lending pool`);
       const poolAddressProviderList = await this.poolAddressProviderRegistry.getAddressesProvidersList();
-      if(poolAddressProviderList.length != 1) {
+      if (poolAddressProviderList.length != 1) {
         throw new Error("Length of pool provider list for Aave3 addresses providers different than 1");
       }
       const poolAddressProviderContract = Aave3PoolAddressesProvider__factory.connect(poolAddressProviderList[0], this.web3Provider);
@@ -160,17 +154,17 @@ export class Aave3Parser extends ProtocolParser {
       const userAddress = userAddresses[i];
       const accountData = userAccountDataResults[i];
       const userCollateral = accountData[0];
-      const userCollateralNormalized = normalize(userCollateral, this.chainToken.decimals);
+      const userCollateralNormalized = normalize(userCollateral, AAVE3_DECIMALS_USD);
       const userDebt = accountData[1];
-      const userDebtNormalized = normalize(userDebt, this.chainToken.decimals);
+      const userDebtNormalized = normalize(userDebt, AAVE3_DECIMALS_USD);
 
       if (userCollateralNormalized > 0 || userDebtNormalized > 0) {
         this.users[userAddress] = {
           collaterals: {
-            [`${this.chainToken.address}`]: userCollateralNormalized
+            "USD": userCollateralNormalized
           },
           debts: {
-            [`${this.chainToken.address}`]: userDebtNormalized
+            "USD": userDebtNormalized
           }
         };
       }
