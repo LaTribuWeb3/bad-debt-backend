@@ -4,7 +4,7 @@ export interface Aave3MultiNetworkConfig {
 
 export interface Aave3Config {
   network: string; // ETH, AVAX.. etc
-  poolAddressesProviderAddress: string;
+  poolAddressesProviderRegistryAddress: string;
   deployBlock: number;
   blockStepLimit?: number; // this is the block step limit when fetching events
   multicallSize: number; // the amount of accounts that will be batched in a single multicall

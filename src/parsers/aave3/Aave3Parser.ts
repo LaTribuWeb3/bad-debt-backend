@@ -1,8 +1,9 @@
 import {
   Aave3Pool,
   Aave3Pool__factory,
-  Aave3PoolAddressProvider,
-  Aave3PoolAddressProvider__factory
+  Aave3PoolAddressesProviderRegistry__factory,
+  Aave3PoolAddressesProvider__factory,
+  Aave3PoolAddressesProviderRegistry
 } from '../../contracts/types';
 import { FetchAllEventsAndExtractStringArray } from '../../utils/EventHelper';
 import { ExecuteMulticall, MulticallParameter } from '../../utils/MulticallHelper';
@@ -15,7 +16,7 @@ import { Aave3Config } from './Aave3Config';
 
 export class Aave3Parser extends ProtocolParser {
   config: Aave3Config;
-  poolAddressProvider: Aave3PoolAddressProvider;
+  poolAddressProviderRegistry: Aave3PoolAddressesProviderRegistry;
   pool?: Aave3Pool;
   chainToken: TokenInfos;
 
@@ -29,8 +30,8 @@ export class Aave3Parser extends ProtocolParser {
   ) {
     super(runnerName, rpcURL, outputJsonFileName, heavyUpdateInterval, fetchDelayInHours);
     this.config = config;
-    this.poolAddressProvider = Aave3PoolAddressProvider__factory.connect(
-      config.poolAddressesProviderAddress,
+    this.poolAddressProviderRegistry = Aave3PoolAddressesProviderRegistry__factory.connect(
+      config.poolAddressesProviderRegistryAddress,
       this.web3Provider
     );
 
@@ -55,7 +56,12 @@ export class Aave3Parser extends ProtocolParser {
   async getPool(): Promise<Aave3Pool> {
     if (!this.pool) {
       console.log(`${this.runnerName} | getLendingPool | getting lending pool`);
-      const lendingPoolAddress = await this.poolAddressProvider.getPool();
+      const poolAddressProviderList = await this.poolAddressProviderRegistry.getAddressesProvidersList();
+      if(poolAddressProviderList.length != 1) {
+        throw new Error("Length of pool provider list for Aave3 addresses providers different than 1");
+      }
+      const poolAddressProviderContract = Aave3PoolAddressesProvider__factory.connect(poolAddressProviderList[0], this.web3Provider);
+      const lendingPoolAddress = await poolAddressProviderContract.getPool();
       console.log(`${this.runnerName} | getLendingPool | got lending pool: ${lendingPoolAddress}`);
       this.pool = Aave3Pool__factory.connect(lendingPoolAddress, this.web3Provider);
     }
