@@ -11,7 +11,7 @@ async function MorphoBlueRunner() {
   }
 
   const runnerName = 'MorphoBlueParser-Runner';
-  const parser = new MorphoBlueParser(config, runnerName, rpcUrl, 'ethereum_morpho_blue.json', 24, 1);
+  const parser = new MorphoBlueParser(config, runnerName, rpcUrl, 'ethereum_morpho-blue.json', 24, 1);
   await parser.main();
 }
 
