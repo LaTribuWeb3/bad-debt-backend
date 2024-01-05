@@ -1,0 +1,10 @@
+{
+    "network": "ETH",
+    "vaultAddresses": [
+        "0x38989bba00bdf8181f4082995b3deae96163ac5d"
+    ],
+    "deployBlock": 18883124,
+    "morphoBlueAddress": "0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb",
+    "multicallSize": 50,
+    "multicallParallelSize": 1
+}
