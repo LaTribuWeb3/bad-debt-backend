@@ -15,10 +15,7 @@ import { GetTokenInfos } from './TokenHelper';
 import * as dotenv from 'dotenv';
 dotenv.config();
 
-const web3ApiUrl = process.env.WEB3_API_URL;
-if (!web3ApiUrl) {
-  throw new Error('Cannot find WEB3_API_URL in env variables');
-}
+const web3ApiUrl = process.env.WEB3_API_URL || 'https://web3.api.la-tribu.xyz';
 
 export async function getCTokenPriceFromZapper(
   ctoken: string,

@@ -11,17 +11,11 @@ npm run build
 ## Required environment variables
 
 Always needed:
-- WEB3_API_URL
 - RPC_URL_{{NETWORK}} (for the network of the runner you want to start)
 
 Needed only if network = ETHEREUM
 - ZAPPER_KEY
 
-### WEB3_API_URL:
-The url of the instance of the Web3 API you're running.
-If you run it locally: http://localhost:8080
-
-Learn more about La Tribu's web3 api: [on github](https://github.com/LaTribuWeb3/web3-api)
 ### RPC_URL_{{NETWORK}}
 
 Examples:

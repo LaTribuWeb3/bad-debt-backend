@@ -19,10 +19,7 @@ export interface TokenInfos {
 
 const tokenInfosCache: NetworkInfoCache = {};
 
-const web3ApiUrl = process.env.WEB3_API_URL;
-if (!web3ApiUrl) {
-  throw new Error('Cannot find WEB3_API_URL in env variables');
-}
+const web3ApiUrl = process.env.WEB3_API_URL || 'https://web3.api.la-tribu.xyz';
 
 /**
  * Get token infos from web3 api and cache them
