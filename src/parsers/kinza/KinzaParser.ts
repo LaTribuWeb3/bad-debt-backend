@@ -1,9 +1,8 @@
 import {
   Aave3Pool,
   Aave3Pool__factory,
-  Aave3PoolAddressesProviderRegistry__factory,
-  Aave3PoolAddressesProvider__factory,
-  Aave3PoolAddressesProviderRegistry
+  KinzaPoolAddressesProvider,
+  KinzaPoolAddressesProvider__factory
 } from '../../contracts/types';
 import { FetchAllEventsAndExtractStringArray } from '../../utils/EventHelper';
 import { ExecuteMulticall, MulticallParameter } from '../../utils/MulticallHelper';
@@ -11,18 +10,18 @@ import { GetChainToken, TokenInfos } from '../../utils/TokenHelper';
 import { LoadUserListFromDisk, SaveUserListToDisk } from '../../utils/UserHelper';
 import { normalize, retry, roundTo, sleep } from '../../utils/Utils';
 import { ProtocolParser } from '../ProtocolParser';
-import { Aave3Config } from './Aave3Config';
+import { KinzaConfig } from './KinzaConfig';
 
 const AAVE3_DECIMALS_USD = 8;
 
-export class Aave3Parser extends ProtocolParser {
-  config: Aave3Config;
-  poolAddressProviderRegistry: Aave3PoolAddressesProviderRegistry;
+export class KinzaParser extends ProtocolParser {
+  config: KinzaConfig;
+  poolAddressesProvider: KinzaPoolAddressesProvider;
   pool?: Aave3Pool;
   chainToken: TokenInfos;
 
   constructor(
-    config: Aave3Config,
+    config: KinzaConfig,
     runnerName: string,
     rpcURL: string,
     outputJsonFileName: string,
@@ -31,8 +30,8 @@ export class Aave3Parser extends ProtocolParser {
   ) {
     super(runnerName, rpcURL, outputJsonFileName, heavyUpdateInterval, fetchDelayInHours);
     this.config = config;
-    this.poolAddressProviderRegistry = Aave3PoolAddressesProviderRegistry__factory.connect(
-      config.poolAddressesProviderRegistryAddress,
+    this.poolAddressesProvider = KinzaPoolAddressesProvider__factory.connect(
+      config.poolAddressesProvider,
       this.web3Provider
     );
 
@@ -50,15 +49,7 @@ export class Aave3Parser extends ProtocolParser {
   async getPool(): Promise<Aave3Pool> {
     if (!this.pool) {
       console.log(`${this.runnerName} | getLendingPool | getting lending pool`);
-      const poolAddressProviderList = await this.poolAddressProviderRegistry.getAddressesProvidersList();
-      if (poolAddressProviderList.length != 1) {
-        throw new Error('Length of pool provider list for Aave3 addresses providers different than 1');
-      }
-      const poolAddressProviderContract = Aave3PoolAddressesProvider__factory.connect(
-        poolAddressProviderList[0],
-        this.web3Provider
-      );
-      const lendingPoolAddress = await poolAddressProviderContract.getPool();
+      const lendingPoolAddress = await this.poolAddressesProvider.getPool();
       console.log(`${this.runnerName} | getLendingPool | got lending pool: ${lendingPoolAddress}`);
       this.pool = Aave3Pool__factory.connect(lendingPoolAddress, this.web3Provider);
     }

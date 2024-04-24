@@ -1,0 +1,18 @@
+{
+	"ETH": {
+		"poolAddressesProvider": "0x0218890dd636c3a1cf0f98557eE2d3612c6bD953",
+		"deployBlock": 19509358,
+		"blockStepLimit": 10000000,
+		"multicallSize": 300,
+		"multicallParallelSize": 5,
+		"network": "ETH"
+	},
+	"BSC": {
+		"poolAddressesProvider": "0xCa20a50ea454Bd9F37a895182ff3309F251Fd7cE",
+		"deployBlock": 29232007,
+		"blockStepLimit": 1000000,
+		"multicallSize": 300,
+		"multicallParallelSize": 5,
+		"network": "BSC"
+	}
+}

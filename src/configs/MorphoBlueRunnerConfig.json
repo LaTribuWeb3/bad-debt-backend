@@ -1,9 +1,7 @@
 {
     "network": "ETH",
     "vaultAddresses": [
-        "0x38989bba00bdf8181f4082995b3deae96163ac5d",
-        "0x186514400e52270cef3d80e1c6f8d10a75d47344",
-        "0x2c25f6c25770ffec5959d34b94bf898865e5d6b1"
+        "0x4881Ef0BF6d2365D3dd6499ccd7532bcdBCE0658"
     ],
     "deployBlock": 18883124,
     "morphoBlueAddress": "0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb",
