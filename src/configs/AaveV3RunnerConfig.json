@@ -1,0 +1,10 @@
+{
+	"ETH": {
+		"poolAddressesProviderRegistryAddress": "0xbaA999AC55EAce41CcAE355c77809e68Bb345170",
+		"deployBlock": 16291006,
+		"blockStepLimit": 10000000,
+		"multicallSize": 300,
+		"multicallParallelSize": 5,
+		"network": "ETH"
+	}
+}
