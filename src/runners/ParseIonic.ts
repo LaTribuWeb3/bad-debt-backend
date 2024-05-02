@@ -1,5 +1,5 @@
 import { CompoundParser } from '../parsers/compound/CompoundParser';
-import config from '../configs/CompoundRunnerConfig.json';
+import config from '../configs/ParseIonicConfig.json';
 import * as dotenv from 'dotenv';
 import { GetRpcUrlForNetwork } from '../utils/Utils';
 dotenv.config();
