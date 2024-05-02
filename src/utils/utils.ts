@@ -24,6 +24,8 @@ export function GetRpcUrlForNetwork(network: string) {
       return process.env.RPC_URL_FANTOM;
     case 'GOERLI':
       return process.env.RPC_URL_GOERLI;
+    case 'MODE':
+      return process.env.RPC_URL_MODE;
   }
 }
 
