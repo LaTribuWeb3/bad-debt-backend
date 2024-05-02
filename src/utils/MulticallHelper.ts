@@ -17,7 +17,8 @@ const multicallAddressMapping = {
   moonbeam: '0x6477204e12a7236b9619385ea453f370ad897bb2',
   optimism: '0xca11bde05977b3631167028862be2a173976ca11',
   gnosis: '0xb6e7bd43cd3832ddfb02fc03035a6471eac757cc',
-  goerli: '0x5ba1e12693dc8f9c48aad8770482f4739beed696'
+  goerli: '0x5ba1e12693dc8f9c48aad8770482f4739beed696',
+  mode: '0xcA11bde05977b3631167028862bE2a173976CA11'
 };
 
 export type MulticallParameter = {

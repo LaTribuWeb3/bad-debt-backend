@@ -11,7 +11,7 @@ async function ParseIonicRunner() {
   }
 
   const runnerName = 'ParseIonic-Runner';
-  const parser = new CompoundParser(config, runnerName, rpcUrl, 'ethereum_ionic.json', 24, 1);
+  const parser = new CompoundParser(config, runnerName, rpcUrl, 'mode_ionic.json', 24, 1);
   await parser.main();
 }
 
