@@ -10,7 +10,7 @@ async function IonicRunner() {
     throw new Error(`Could not find rpc url in env variable for network ${config.network}`);
   }
 
-  const runnerName = 'IonerParser-Runner';
+  const runnerName = 'IonicParser-Runner';
   const parser = new CompoundParser(config, runnerName, rpcUrl, 'mode_ionic.json', 24, 1);
   await parser.main();
 }
