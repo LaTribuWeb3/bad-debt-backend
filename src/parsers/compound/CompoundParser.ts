@@ -209,9 +209,14 @@ export class CompoundParser extends ProtocolParser {
   }
 
   /**
-   * TODO EXPLAIN THIS FUNCTION BECAUSE ITS THE ONE THAT GET USERS DATA
-   * @param userAddresses
+   * The current exchange rate as an unsigned integer, scaled by 1 * 10^(18 - 8 + Underlying Token Decimals).
+   * @param marketTokenInfos
+   * @returns {number} exchangeRate decimals
    */
+  getExchangeRateDecimals(marketTokenInfos: TokenInfos) {
+    return 18 - 8 + marketTokenInfos.decimals;
+  }
+
   async updateUsersWithMulticall(userAddresses: string[]) {
     const assetsInParameters: MulticallParameter[] = [];
     for (const userAddress of userAddresses) {
@@ -280,8 +285,7 @@ export class CompoundParser extends ProtocolParser {
         );
         const borrowBalance = snapshotResults[index][2];
         const exchangeRateMantissa = snapshotResults[index][3];
-
-        const exchangeRateDecimals = 18 - 8 + marketTokenInfos.decimals;
+        const exchangeRateDecimals = this.getExchangeRateDecimals(marketTokenInfos);
         const normalizedExchangeRate = normalize(BigInt(exchangeRateMantissa.toString()), exchangeRateDecimals);
         let normalizedCollateralBalance = normalizedExchangeRate * normalizedCollateralBalanceInCToken;
         let normalizedBorrowBalance = normalize(BigInt(borrowBalance.toString()), marketTokenInfos.decimals);
