@@ -1,7 +1,7 @@
-import { CompoundParser } from '../parsers/compound/CompoundParser';
 import config from '../configs/IonicRunnerConfig.json';
 import * as dotenv from 'dotenv';
 import { GetRpcUrlForNetwork } from '../utils/Utils';
+import { IonicParser } from '../parsers/compound/IonicParser';
 dotenv.config();
 
 async function IonicRunner() {
@@ -11,7 +11,7 @@ async function IonicRunner() {
   }
 
   const runnerName = 'IonicParser-Runner';
-  const parser = new CompoundParser(config, runnerName, rpcUrl, 'mode_ionic.json', 24, 1);
+  const parser = new IonicParser(config, runnerName, rpcUrl, 'mode_ionic.json', 24, 1);
   await parser.main();
 }
 
