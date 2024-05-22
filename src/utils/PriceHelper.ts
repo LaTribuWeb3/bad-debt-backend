@@ -193,6 +193,11 @@ export async function GetPrice(network: string, address: string, web3Provider: J
   }
   if (network === 'MOONBEAM') return 0;
 
+  // force fallback price for stake stone ether on mode network
+  if (network === 'MODE' && address.toLowerCase() == '0x80137510979822322193fc997d400d5a6c747bf7') {
+    return 0;
+  }
+
   const specialPriceFetcher =
     specialAssetPriceFetchers[`${network}_${address}` as keyof typeof specialAssetPriceFetchers];
   if (specialPriceFetcher) {
