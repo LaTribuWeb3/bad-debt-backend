@@ -3,7 +3,7 @@
     "version": "1.0.0",
     "main": "index.ts",
     "scripts": {
-        "start": "ts-node ./src/index.ts",
+        "start": "node --inspect -r ts-node/register ./src/index.ts",
         "build": "rimraf ./build && tsc && cp package.json ./build/package.json && cp start_all.sh ./build/start_all.sh",
         "deploy": "npm run build && scp -r -p ./build/* baddebt1:/app/bad-debt-backend",
         "lint": "eslint . --ext .ts",

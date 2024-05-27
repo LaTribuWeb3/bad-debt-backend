@@ -1,7 +1,7 @@
 import * as dotenv from 'dotenv';
 import config from '../configs/VenusRunnerConfig.json';
 import { GetRpcUrlForNetwork } from '../utils/Utils';
-import { CompoundParser } from '../parsers/compound/CompoundParser';
+import { VenusParser } from '../parsers/compound/VenusParser';
 dotenv.config();
 
 async function VenusRunner() {
@@ -11,7 +11,7 @@ async function VenusRunner() {
   }
 
   const runnerName = 'VenusParser-Runner';
-  const parser = new CompoundParser(config, runnerName, rpcUrl, 'BSC_venus.json', 24, 1);
+  const parser = new VenusParser(config, runnerName, rpcUrl, 'BSC_venus.json', 24, 1);
   await parser.main();
 }
 

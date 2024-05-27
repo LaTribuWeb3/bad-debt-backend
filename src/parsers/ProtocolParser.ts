@@ -124,7 +124,6 @@ export abstract class ProtocolParser {
     }
 
     await this.fetchUsersData(currBlockNumber);
-
     if (!this.userList || this.userList.length == 0) {
       throw new Error('this.userList is not initialized');
     }
