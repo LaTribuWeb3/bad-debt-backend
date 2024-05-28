@@ -50,9 +50,9 @@ sleep 120
 pm2 restart bad-debt-backend.pm2.config.js --only bdts-eth-aave -s
 echo "started bdts-eth-aave. Waiting before starting next"
 sleep 120
-pm2 restart bad-debt-backend.pm2.config.js --only bdts-gnosis-agave -s
-echo "started bdts-gnosis-agave. Waiting before starting next"
-sleep 120
+# pm2 restart bad-debt-backend.pm2.config.js --only bdts-gnosis-agave -s
+# echo "started bdts-gnosis-agave. Waiting before starting next"
+# sleep 120
 pm2 restart bad-debt-backend.pm2.config.js --only bdts-ftm-granary -s
 echo "started bdts-ftm-granary. Waiting before starting next"
 sleep 120
