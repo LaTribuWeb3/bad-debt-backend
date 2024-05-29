@@ -6,9 +6,10 @@
 		],
 		"deployBlock": 2471512,
 		"blockStepLimit": 10000,
-		"multicallSize": 100,
+		"multicallSize": 200,
 		"multicallParallelSize": 5,
 		"diamondProxyFirstBlock": 32139323,
+		"checkVai": true,
 		"network": "BSC",
 		"nonBorrowableMarkets": [
 
@@ -27,6 +28,7 @@
 		"multicallSize": 100,
 		"multicallParallelSize": 5,
 		"diamondProxyFirstBlock": 29756211,
+		"checkVai": false,
 		"network": "BSC",
 		"nonBorrowableMarkets": [
 
@@ -45,6 +47,7 @@
 		"multicallSize": 100,
 		"multicallParallelSize": 5,
 		"diamondProxyFirstBlock": 29755690,
+		"checkVai": false,
 		"network": "BSC",
 		"nonBorrowableMarkets": [
 
@@ -63,6 +66,7 @@
 		"multicallSize": 100,
 		"multicallParallelSize": 5,
 		"diamondProxyFirstBlock": 38740860,
+		"checkVai": false,
 		"network": "BSC",
 		"nonBorrowableMarkets": [
 
@@ -81,6 +85,7 @@
 		"multicallSize": 100,
 		"multicallParallelSize": 5,
 		"diamondProxyFirstBlock": 29756308,
+		"checkVai": false,
 		"network": "BSC",
 		"nonBorrowableMarkets": [
 
@@ -99,6 +104,7 @@
 		"multicallSize": 100,
 		"multicallParallelSize": 5,
 		"diamondProxyFirstBlock": 29533277,
+		"checkVai": false,
 		"network": "BSC",
 		"nonBorrowableMarkets": [
 
@@ -117,6 +123,7 @@
 		"multicallSize": 100,
 		"multicallParallelSize": 5,
 		"diamondProxyFirstBlock": 29754919,
+		"checkVai": false,
 		"network": "BSC",
 		"nonBorrowableMarkets": [
 
