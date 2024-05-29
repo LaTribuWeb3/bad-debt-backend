@@ -1,3 +1,7 @@
+export interface CompoundMultiConfig {
+  [configKey: string]: CompoundConfig;
+}
+
 export interface CompoundConfig {
   network: string; // ETH, AVAX.. etc
   comptrollerAddress: string;
