@@ -5,8 +5,8 @@
 			"0xA07c5b74C9B40447a954e1466938b865b6BBea36"
 		],
 		"deployBlock": 2471512,
-		"blockStepLimit": 50000,
-		"multicallSize": 200,
+		"blockStepLimit": 10000,
+		"multicallSize": 100,
 		"multicallParallelSize": 5,
 		"diamondProxyFirstBlock": 32139323,
 		"network": "BSC",
@@ -23,7 +23,7 @@
 			"0xA07c5b74C9B40447a954e1466938b865b6BBea36"
 		],
 		"deployBlock": 29524458,
-		"blockStepLimit": 50000,
+		"blockStepLimit": 10000,
 		"multicallSize": 100,
 		"multicallParallelSize": 5,
 		"diamondProxyFirstBlock": 29756211,
@@ -41,7 +41,7 @@
 			"0xA07c5b74C9B40447a954e1466938b865b6BBea36"
 		],
 		"deployBlock": 29524449,
-		"blockStepLimit": 50000,
+		"blockStepLimit": 10000,
 		"multicallSize": 100,
 		"multicallParallelSize": 5,
 		"diamondProxyFirstBlock": 29755690,
@@ -59,7 +59,7 @@
 			"0xA07c5b74C9B40447a954e1466938b865b6BBea36"
 		],
 		"deployBlock": 38740860,
-		"blockStepLimit": 50000,
+		"blockStepLimit": 10000,
 		"multicallSize": 100,
 		"multicallParallelSize": 5,
 		"diamondProxyFirstBlock": 38740860,
@@ -77,7 +77,7 @@
 			"0xA07c5b74C9B40447a954e1466938b865b6BBea36"
 		],
 		"deployBlock": 29524463,
-		"blockStepLimit": 50000,
+		"blockStepLimit": 10000,
 		"multicallSize": 100,
 		"multicallParallelSize": 5,
 		"diamondProxyFirstBlock": 29756308,
@@ -95,7 +95,7 @@
 			"0xA07c5b74C9B40447a954e1466938b865b6BBea36"
 		],
 		"deployBlock": 29356768,
-		"blockStepLimit": 50000,
+		"blockStepLimit": 10000,
 		"multicallSize": 100,
 		"multicallParallelSize": 5,
 		"diamondProxyFirstBlock": 29533277,
@@ -113,7 +113,7 @@
 			"0xA07c5b74C9B40447a954e1466938b865b6BBea36"
 		],
 		"deployBlock": 29524470,
-		"blockStepLimit": 50000,
+		"blockStepLimit": 10000,
 		"multicallSize": 100,
 		"multicallParallelSize": 5,
 		"diamondProxyFirstBlock": 29754919,
