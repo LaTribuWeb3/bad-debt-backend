@@ -206,6 +206,12 @@ export class CompoundParser extends ProtocolParser {
       startIndex += this.config.multicallSize;
     }
     await Promise.all(promises);
+
+    await this.fetchAdditionnalDebt(usersToUpdate);
+  }
+
+  async fetchAdditionnalDebt(usersToUpdate: string[]) {
+    console.log('fetchAdditionnalDebt: noop');
   }
 
   /**

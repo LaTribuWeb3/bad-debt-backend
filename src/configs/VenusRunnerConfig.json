@@ -1,11 +1,135 @@
 {
-    "comptrollerAddress": "0xfD36E2c2a6789Db23113685031d7F16329158384",
-    "cETHAddresses": ["0xA07c5b74C9B40447a954e1466938b865b6BBea36"],
-    "deployBlock": 2471512,
-    "blockStepLimit": 10000,
-    "multicallSize": 200,
-    "multicallParallelSize": 5,
-    "network": "BSC",
-    "nonBorrowableMarkets": [],
-    "rektMarket": []
+	"Core": {
+		"comptrollerAddress": "0xfD36E2c2a6789Db23113685031d7F16329158384",
+		"cETHAddresses": [
+			"0xA07c5b74C9B40447a954e1466938b865b6BBea36"
+		],
+		"deployBlock": 2471512,
+		"blockStepLimit": 10000,
+		"multicallSize": 200,
+		"multicallParallelSize": 5,
+		"diamondProxyFirstBlock": 32139323,
+		"checkVai": true,
+		"network": "BSC",
+		"nonBorrowableMarkets": [
+
+		],
+		"rektMarket": [
+
+		]
+	},
+	"GameFi": {
+		"comptrollerAddress": "0x1b43ea8622e76627B81665B1eCeBB4867566B963",
+		"cETHAddresses": [
+			"0xA07c5b74C9B40447a954e1466938b865b6BBea36"
+		],
+		"deployBlock": 29524458,
+		"blockStepLimit": 10000,
+		"multicallSize": 100,
+		"multicallParallelSize": 5,
+		"diamondProxyFirstBlock": 29756211,
+		"checkVai": false,
+		"network": "BSC",
+		"nonBorrowableMarkets": [
+
+		],
+		"rektMarket": [
+
+		]
+	},
+	"Defi": {
+		"comptrollerAddress": "0x3344417c9360b963ca93A4e8305361AEde340Ab9",
+		"cETHAddresses": [
+			"0xA07c5b74C9B40447a954e1466938b865b6BBea36"
+		],
+		"deployBlock": 29524449,
+		"blockStepLimit": 10000,
+		"multicallSize": 100,
+		"multicallParallelSize": 5,
+		"diamondProxyFirstBlock": 29755690,
+		"checkVai": false,
+		"network": "BSC",
+		"nonBorrowableMarkets": [
+
+		],
+		"rektMarket": [
+
+		]
+	},
+	"Meme": {
+		"comptrollerAddress": "0x33B6fa34cd23e5aeeD1B112d5988B026b8A5567d",
+		"cETHAddresses": [
+			"0xA07c5b74C9B40447a954e1466938b865b6BBea36"
+		],
+		"deployBlock": 38740860,
+		"blockStepLimit": 10000,
+		"multicallSize": 100,
+		"multicallParallelSize": 5,
+		"diamondProxyFirstBlock": 38740860,
+		"checkVai": false,
+		"network": "BSC",
+		"nonBorrowableMarkets": [
+
+		],
+		"rektMarket": [
+
+		]
+	},
+	"Liquid Staked BNB": {
+		"comptrollerAddress": "0xd933909A4a2b7A4638903028f44D1d38ce27c352",
+		"cETHAddresses": [
+			"0xA07c5b74C9B40447a954e1466938b865b6BBea36"
+		],
+		"deployBlock": 29524463,
+		"blockStepLimit": 10000,
+		"multicallSize": 100,
+		"multicallParallelSize": 5,
+		"diamondProxyFirstBlock": 29756308,
+		"checkVai": false,
+		"network": "BSC",
+		"nonBorrowableMarkets": [
+
+		],
+		"rektMarket": [
+
+		]
+	},
+	"Stablecoins": {
+		"comptrollerAddress": "0x94c1495cD4c557f1560Cbd68EAB0d197e6291571",
+		"cETHAddresses": [
+			"0xA07c5b74C9B40447a954e1466938b865b6BBea36"
+		],
+		"deployBlock": 29356768,
+		"blockStepLimit": 10000,
+		"multicallSize": 100,
+		"multicallParallelSize": 5,
+		"diamondProxyFirstBlock": 29533277,
+		"checkVai": false,
+		"network": "BSC",
+		"nonBorrowableMarkets": [
+
+		],
+		"rektMarket": [
+
+		]
+	},
+	"Tron": {
+		"comptrollerAddress": "0x23b4404E4E5eC5FF5a6FFb70B7d14E3FabF237B0",
+		"cETHAddresses": [
+			"0xA07c5b74C9B40447a954e1466938b865b6BBea36"
+		],
+		"deployBlock": 29524470,
+		"blockStepLimit": 10000,
+		"multicallSize": 100,
+		"multicallParallelSize": 5,
+		"diamondProxyFirstBlock": 29754919,
+		"checkVai": false,
+		"network": "BSC",
+		"nonBorrowableMarkets": [
+
+		],
+		"rektMarket": [
+
+		]
+	}
 }
