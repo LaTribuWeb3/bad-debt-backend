@@ -151,7 +151,7 @@ export abstract class ProtocolParser {
   }
 
   async getBlockNumAndTime() {
-    const currBlockNumber = (await retry(() => this.web3Provider.getBlockNumber(), [])) - 10;
+    const currBlockNumber = (await retry(() => this.web3Provider.getBlockNumber(), [])) - 100;
     const currTime = (await retry(() => this.web3Provider.getBlock(currBlockNumber), []))?.timestamp;
 
     return { currBlockNumber, currTime };
