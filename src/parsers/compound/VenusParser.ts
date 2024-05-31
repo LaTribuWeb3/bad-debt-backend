@@ -1,5 +1,5 @@
 import { BaseContract } from 'ethers';
-import { ComptrollerVenus__factory, VToken__factory } from '../../contracts/types';
+import { CToken__factory, ComptrollerVenus__factory, VToken__factory } from '../../contracts/types';
 import { FetchAllEventsAndExtractStringArray } from '../../utils/EventHelper';
 import { ExecuteMulticall, MulticallParameter } from '../../utils/MulticallHelper';
 import { GetPrice } from '../../utils/PriceHelper';
@@ -29,6 +29,10 @@ export class VenusParser extends CompoundParser {
   }
 
   override getCTokenContract(marketAddress: string): BaseContract {
+    if (this.checkVai) {
+      // this is only for the Core Pool
+      return CToken__factory.connect(marketAddress, this.web3Provider);
+    }
     return VToken__factory.connect(marketAddress, this.web3Provider);
   }
 
