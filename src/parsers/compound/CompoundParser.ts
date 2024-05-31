@@ -1,3 +1,4 @@
+import { BaseContract } from 'ethers';
 import {
   CToken__factory,
   CompoundOracle__factory,
@@ -359,6 +360,10 @@ export class CompoundParser extends ProtocolParser {
     return this.userList;
   }
 
+  getCTokenContract(marketAddress: string): BaseContract {
+    return CToken__factory.connect(marketAddress, this.web3Provider);
+  }
+
   async processLightUpdate(targetBlockNumber: number): Promise<string[]> {
     const logPrefix = `${this.runnerName} | processLightUpdate |`;
     let usersToUpdate: string[] = [];
@@ -373,7 +378,7 @@ export class CompoundParser extends ProtocolParser {
     };
 
     for (const market of this.markets) {
-      const ctoken = CToken__factory.connect(market, this.web3Provider);
+      const ctoken = this.getCTokenContract(market);
       for (const [eventName, eventArgs] of Object.entries(events)) {
         console.log(
           `${logPrefix} Fetching new events for market ${market}, event name: ${eventName}, args: ${eventArgs.join(

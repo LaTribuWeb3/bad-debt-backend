@@ -1,4 +1,5 @@
-import { ComptrollerVenus__factory } from '../../contracts/types';
+import { BaseContract } from 'ethers';
+import { ComptrollerVenus__factory, VToken__factory } from '../../contracts/types';
 import { FetchAllEventsAndExtractStringArray } from '../../utils/EventHelper';
 import { ExecuteMulticall, MulticallParameter } from '../../utils/MulticallHelper';
 import { GetPrice } from '../../utils/PriceHelper';
@@ -26,6 +27,11 @@ export class VenusParser extends CompoundParser {
     this.checkVai = config.checkVai;
     console.log(`VenusParser: diamond block: ${this.diamondProxyFirstBlock}`);
   }
+
+  override getCTokenContract(marketAddress: string): BaseContract {
+    return VToken__factory.connect(marketAddress, this.web3Provider);
+  }
+
   override async processHeavyUpdate(targetBlockNumber: number): Promise<string[]> {
     this.userList = [];
     let firstBlockToFetch = this.config.deployBlock;
